@@ -1,6 +1,3 @@
-## 📘 README.md – Exemple complet
-
-```markdown
 # BognyTransfert – Service de transfert sécurisé de fichiers
 
 Ce projet est un système de type **WeTransfer-like** développé en PHP (structure MVC légère), avec vérification par code (2FA) et expiration automatique des fichiers.
