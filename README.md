@@ -144,6 +144,3 @@ Projet développé par **Kevin Robinet** – Mairie de Bogny-sur-Meuse
 ## 📄 Licence
 
 Projet open source — utilisation libre et modifiable.
-
-```
----
