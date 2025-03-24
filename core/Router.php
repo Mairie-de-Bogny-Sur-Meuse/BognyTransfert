@@ -1,0 +1,40 @@
+<?php
+
+class Router
+{
+    public function handleRequest()
+    {
+        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+        if ($uri === '/' || $uri === '/upload-form') {
+            require 'app/views/upload_form.php';
+
+        } elseif ($uri === '/upload') {
+            $controller = new UploadController();
+            $controller->handleUpload();
+
+        } elseif ($uri === '/verify' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+            require 'app/views/verify_form.php';
+
+        } elseif ($uri === '/verify' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $controller = new VerificationController();
+            $controller->handleForm();
+
+        } elseif ($uri === '/download/file') {
+            $controller = new DownloadController();
+            $controller->downloadSingle($_GET['uuid'] ?? '', $_GET['file'] ?? '');
+
+        } elseif ($uri === '/download/all' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $controller = new DownloadController();
+            $controller->downloadZip($_POST['uuid'] ?? '');
+
+        } elseif (preg_match('#^/download/([a-z0-9]+)$#', $uri, $matches)) {
+            $controller = new DownloadController();
+            $controller->handleDownload($matches[1]);
+
+        } else {
+            http_response_code(404);
+            echo "404 - Page introuvable";
+        }
+    }
+}
