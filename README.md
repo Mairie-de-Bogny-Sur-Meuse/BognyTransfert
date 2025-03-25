@@ -1,146 +1,88 @@
-# BognyTransfert – Service de transfert sécurisé de fichiers
+# BognyTransfert
 
-Ce projet est un système de type **WeTransfer-like** développé en PHP (structure MVC légère), avec vérification par code (2FA) et expiration automatique des fichiers.
+**BognyTransfert** est une application web développée en PHP qui permet aux utilisateurs de transférer facilement des fichiers et des dossiers via une interface intuitive. L'application offre des fonctionnalités avancées telles que la gestion des sous-dossiers, la prévention des fichiers potentiellement dangereux et la génération de liens de téléchargement temporaires.
 
----
+## Table des matières
 
-## 🚀 Fonctionnalités
+1. [Fonctionnalités](#fonctionnalités)
+2. [Technologies utilisées](#technologies-utilisées)
+3. [Installation](#installation)
+4. [Utilisation](#utilisation)
+5. [Structure du projet](#structure-du-projet)
+6. [Contribuer](#contribuer)
+7. [Licence](#licence)
 
-- Envoi de fichiers jusqu'à **10 Go**
-- Vérification 2FA par code email (valide 15 min)
-- Lien de téléchargement avec expiration (par défaut : 72h)
-- Téléchargement des fichiers un par un ou via une archive ZIP
-- Suppression automatique des envois expirés (30j / 90j)
-- Interface moderne avec **TailwindCSS**
-- Notification email via **PHPMailer**
+## Fonctionnalités
 
----
+- **Transfert de fichiers et de dossiers** : Les utilisateurs peuvent uploader des fichiers individuels ou des dossiers entiers, avec conservation de la structure des sous-dossiers.
+- **Sécurité renforcée** : Filtrage automatique des fichiers potentiellement dangereux (par exemple, `.php`, `.sh`, `.exe`) et des fichiers système inutiles (par exemple, `.DS_Store`, `Thumbs.db`).
+- **Génération de liens de téléchargement temporaires** : Après l'upload, un lien unique est généré pour le téléchargement des fichiers, avec une durée de validité configurable.
+- **Interface utilisateur intuitive** : Affichage clair des fichiers et dossiers uploadés, avec des icônes spécifiques pour différents types de fichiers (PDF, Word, Excel, etc.).
 
-## 📁 Structure du projet
+## Technologies utilisées
 
-```
-/app/
-  /controllers/       ← Logique métier (UploadController, DownloadController, etc.)
-  /views/             ← Fichiers HTML + Tailwind
-  /models/            ← (optionnel) Modèles SQL
-/core/                ← Router, Database, etc.
-/config/              ← Fichier de configuration
-/storage/uploads/     ← Fichiers utilisateurs
-/storage/archive/     ← Archives compressées
-/cron/                ← Scripts de nettoyage
-/public/              ← Webroot (optionnel)
-index.php             ← Point d’entrée principal
-```
+- **PHP** : Langage principal pour le développement côté serveur.
+- **Tailwind CSS** : Framework CSS pour une conception rapide et responsive de l'interface utilisateur.
 
----
+## Installation
 
-## ⚙️ Pré-requis
+1. **Prérequis** :
 
-- PHP ≥ 7.4
-- MySQL/MariaDB
-- Apache (avec mod_rewrite) ou Nginx
-- Composer
+   - Serveur web compatible avec PHP (par exemple, Apache).
+   - PHP version 7.4 ou supérieure.
+   - Base de données MySQL ou MariaDB.
 
----
+2. **Étapes d'installation** :
 
-## 🔒 Fichiers ignorés par Git
+   - Clonez le dépôt du projet :
 
-Le fichier `.gitignore` exclut les données sensibles et utilisateurs :  
-- `/config/config.php`
-- `/storage/uploads/`
-- `/storage/archive/`
-- `/vendor/`
+     ```bash
+     git clone https://github.com/votre-utilisateur/bognytransfert.git
+     ```
 
----
+   - Accédez au répertoire du projet :
 
-## 🔐 Création de `config/config.php`
+     ```bash
+     cd bognytransfert
+     ```
 
-Crée le fichier `config/config.php` manuellement :
+   - Configurez la base de données en important le fichier `database.sql` dans votre SGBD.
 
-```php
-<?php
+   - Renommez le fichier `.env.example` en `.env` et configurez les paramètres de connexion à la base de données.
 
-return [
-    'db_host' => 'localhost',
-    'db_name' => 'nom_de_ta_base',
-    'db_user' => 'utilisateur',
-    'db_pass' => 'mot_de_passe',
+   - Assurez-vous que le répertoire `storage` est accessible en écriture par le serveur web.
 
-    'smtp_user' => 'no-reply@tondomaine.fr',
-    'smtp_pass' => 'mot_de_passe_smtp',
+   - Configurez votre serveur web pour pointer vers le répertoire `public` du projet.
 
-    'storage_path' => __DIR__ . '/../storage/uploads/',
-    'archive_path' => __DIR__ . '/../storage/archive/',
-    'max_upload_size' => 10 * 1024 * 1024 * 1024, // 10 Go
-    'max_monthly_per_user' => 200 * 1024 * 1024 * 1024, // 200 Go
-    'token_validity_hours' => 72,
-];
-```
+## Utilisation
 
----
+- **Upload de fichiers/dossiers** : Sur la page d'accueil, utilisez le bouton "Choisir des fichiers" pour sélectionner des fichiers ou des dossiers à uploader. La structure des dossiers sera préservée lors du transfert.
 
-## 🗄️ Base de données
+- **Lien de téléchargement** : Après l'upload, un lien unique vous sera fourni. Vous pouvez le partager avec les destinataires pour qu'ils puissent télécharger les fichiers.
 
-Voici un schéma SQL de base pour la table `uploads` :
+- **Expiration du lien** : Chaque lien de téléchargement a une durée de validité limitée, affichée sur la page de confirmation. Une fois expiré, le lien ne permettra plus l'accès aux fichiers.
 
-```sql
-CREATE TABLE uploads (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    uuid VARCHAR(64),
-    email VARCHAR(255),
-    file_name VARCHAR(255),
-    file_path TEXT,
-    file_size BIGINT,
-    password_hash TEXT,
-    token VARCHAR(255),
-    token_expire DATETIME,
-    code_2fa VARCHAR(10),
-    verification_expires_at DATETIME,
-    verified_at DATETIME,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-```
+## Structure du projet
+
+Le projet est organisé comme suit :
+
+- `app/` : Contient les contrôleurs et la logique métier de l'application.
+- `public/` : Répertoire public accessible via le serveur web, contenant le point d'entrée `index.php`.
+- `storage/` : Emplacement des fichiers uploadés et des logs.
+- `views/` : Fichiers HTML avec intégration de PHP pour l'affichage des pages.
+
+## Contribuer
+
+Les contributions sont les bienvenues ! Si vous souhaitez améliorer BognyTransfert, veuillez suivre les étapes suivantes :
+
+1. Forkez le dépôt.
+2. Créez une branche pour votre fonctionnalité ou correction de bug (`git checkout -b ma-nouvelle-fonctionnalité`).
+3. Effectuez vos modifications et commitez-les (`git commit -am 'Ajout d'une nouvelle fonctionnalité'`).
+4. Poussez vos modifications sur votre fork (`git push origin ma-nouvelle-fonctionnalité`).
+5. Créez une Pull Request vers le dépôt principal.
+
+## Licence
+
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
 ---
-
-## 📬 Installation des dépendances
-
-```bash
-composer install
-```
-
----
-
-## 🕒 Tâches CRON recommandées
-
-```bash
-# Supprimer les envois non validés (toutes les 5 min)
-*/5 * * * * /usr/bin/php /chemin/vers/projet/cron/delete_unverified.php
-
-# Supprimer les envois publics expirés (tous les jours à 1h)
-0 1 * * * /usr/bin/php /chemin/vers/projet/cron/clean_public.php
-
-# Supprimer les archives compressées (tous les jours à 2h)
-0 2 * * * /usr/bin/php /chemin/vers/projet/cron/clean_archive.php
-```
----
-## 🛡 Sécurité
-
-- Les liens sont signés par token UUID (non devinable)
-- Protection par mot de passe en option
-- Confirmation de propriété email par code 2FA (15 min max)
-- Fichiers stockés en dehors de `/public/`
-- Téléchargement uniquement via contrôleur sécurisé
-
----
-
-## ✍️ Auteur
-
-Projet développé par **Kevin Robinet** – Mairie de Bogny-sur-Meuse  
-> [https://bognysurmeuse.fr](https://bognysurmeuse.fr)
-
----
-
-## 📄 Licence
-
-Projet open source — utilisation libre et modifiable.
