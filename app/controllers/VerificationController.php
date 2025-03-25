@@ -17,7 +17,10 @@ class VerificationController
         $token = $stmt->fetch();
 
         if (!$token || !isset($_SESSION['pending_upload'])) {
-            echo "❌ Code invalide ou expiré.";
+            $title = "Code invalide ou expiré.";
+            $message = "❌ Code invalide ou expiré.";
+            $code = 400;
+            require 'app/views/errors/custom_error.php';
             return;
         }
 
@@ -36,7 +39,11 @@ class VerificationController
 
         // 📁 Créer le dossier final
         if (!mkdir($finalPath, 0755, true)) {
-            die("Erreur : impossible de créer le dossier d’upload final.");
+            $title = "Création du dossier de stockage";
+            $message = "Erreur : impossible de créer le dossier d’upload final.";
+            $code = 500;
+            require 'app/views/errors/custom_error.php';
+            return;
         }
 
         // 🔑 Générer un token de téléchargement unique
@@ -71,7 +78,11 @@ class VerificationController
             }
 
             if (!rename($src, $dst)) {
-                die("Erreur lors du déplacement de $relativePath.");
+                $title = "Erreur lors du déplacement d'un fichier";
+                $message = "Une erreur est survenue lors du transfert de $relativePath.";
+                $code = 400;
+                require 'app/views/errors/custom_error.php';
+                return;
             }
 
             $size = filesize($dst);

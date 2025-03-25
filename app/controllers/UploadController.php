@@ -17,13 +17,22 @@ class UploadController
         
         // ✅ Vérification de l’adresse email professionnelle
         if (!preg_match('/@bognysurmeuse\\.fr$/', $email)) {
-            die("Email non autorisé. Seules les adresses @bognysurmeuse.fr sont acceptées.");
+            $title = "Email non autorisé";
+            $message = "Email non autorisé. Seules les adresses @bognysurmeuse.fr sont acceptées.";
+            $code = 403;
+            require 'app/views/errors/custom_error.php';
+            return;
         }
 
         // 📁 Création du dossier temporaire
         $tempPath = $config['temp_upload_path'] . $uuid . '/';
         if (!mkdir($tempPath, 0755, true)) {
-            die("Erreur : impossible de créer le dossier temporaire.");
+            $title = "Création de dossier temporaire Imposible";
+            $message = "Erreur : impossible de créer le dossier temporaire.";
+            $code = 500;
+            require 'app/views/errors/custom_error.php';
+            return;
+
         }
 
         $savedFiles = [];
@@ -38,7 +47,11 @@ class UploadController
         
                 $destination = $tempPath . $name;
                 if (!move_uploaded_file($tmp, $destination)) {
-                    die("Erreur déplacement de $name");
+                    $title = "Erreur lors du déplacement d'un fichier";
+                    $message = "Une erreur est survenu lors du déplacement de $name";
+                    $code = 500;
+                    require 'app/views/errors/custom_error.php';
+                    return;
                 }
         
                 $savedFiles[] = $name;

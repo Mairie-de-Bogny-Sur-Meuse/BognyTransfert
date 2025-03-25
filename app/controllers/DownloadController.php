@@ -12,16 +12,20 @@ class DownloadController
     $uploads = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     if (!$uploads) {
-        http_response_code(404);
-        echo "Lien invalide. -> ".$token;
+        $title = "Lien Invalide";
+        $message = "Votre lien est invalide";
+        $code = 400;
+        require 'app/views/errors/custom_error.php';
         return;
     }
 
     // 2. Expiration
     $expire = new DateTime($uploads[0]['token_expire']);
     if (new DateTime() > $expire) {
-        http_response_code(403);
-        echo "Lien expiré.";
+        $title = "Lien Expirer";
+        $message = "Votre lien est expirer";
+        $code = 403;
+        require 'app/views/errors/custom_error.php';
         return;
     }
 
@@ -59,7 +63,11 @@ private function serveZip(array $uploads)
     $tmpZipPath = sys_get_temp_dir() . '/download_' . uniqid() . '.zip';
 
     if ($zip->open($tmpZipPath, ZipArchive::CREATE) !== true) {
-        die("Impossible de créer l’archive ZIP.");
+        $title = "Création d'archive ZIP'";
+        $message = "Erreur : Impossible de créer l’archive ZIP.";
+        $code = 500;
+        require 'app/views/errors/custom_error.php';
+        return;
     }
 
     foreach ($uploads as $file) {
@@ -105,8 +113,10 @@ public function downloadSingle($uuid, $fileName)
 
     $file = $stmt->fetch();
     if (!$file || !file_exists($file['file_path'])) {
-        http_response_code(404);
-        echo "Fichier introuvable.";
+        $title = "Fichier Introuvable";
+        $message = "Le fichier est introuvable";
+        $code = 400;
+        require 'app/views/errors/custom_error.php';
         return;
     }
 
@@ -120,7 +130,10 @@ public function downloadZip($uuid)
     $uploads = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     if (!$uploads) {
-        echo "Fichiers non trouvés.";
+        $title = "Fichier non trouver";
+        $message = "Le fichier non trouver";
+        $code = 400;
+        require 'app/views/errors/custom_error.php';
         return;
     }
 

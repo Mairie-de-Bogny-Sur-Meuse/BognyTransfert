@@ -13,7 +13,7 @@
     <p class="text-gray-700 mb-2">Voici votre lien de téléchargement sécurisé :</p>
 
     <div class="bg-gray-100 border border-gray-300 rounded-md p-4 break-all mb-4">
-      <a href="<?= htmlspecialchars($downloadUrl) ?>" class="text-blue-600 hover:underline">
+      <a href="<?= htmlspecialchars($downloadUrl) ?>" class="text-blue-600 hover:underline" target="_blank">
         <?= htmlspecialchars($downloadUrl) ?>
       </a>
     </div>
