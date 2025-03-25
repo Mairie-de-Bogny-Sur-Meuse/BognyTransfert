@@ -9,7 +9,7 @@
 
   <div class="bg-white shadow-md rounded-lg p-8 max-w-xl w-full text-center">
     <h1 class="text-2xl font-bold text-green-600 mb-4">✅ Fichiers envoyés avec succès !</h1>
-
+    <?php if (isset($downloadUrl)): ?>
     <p class="text-gray-700 mb-2">Voici votre lien de téléchargement sécurisé :</p>
 
     <div class="bg-gray-100 border border-gray-300 rounded-md p-4 break-all mb-4">
@@ -17,6 +17,9 @@
         <?= htmlspecialchars($downloadUrl) ?>
       </a>
     </div>
+    <?php else: ?>
+    <p>Erreur : lien de téléchargement non disponible.</p>
+    <?php endif; ?>
 
     <p class="text-sm text-gray-500 italic">Un e-mail contenant ce lien a été envoyé à votre adresse.</p>
 

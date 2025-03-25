@@ -66,7 +66,8 @@ class VerificationController
             array_map('unlink', glob("$tempPath/*"));
             rmdir($tempPath);
 
-            header("Location: /upload_success");
+            $downloadUrl = "https://dl.bognysurmeuse.fr/download/$tokenDownload";
+            require __DIR__ . '/../views/upload_success.php';
             exit;
         } else {
             echo "❌ Code invalide ou expiré.";
