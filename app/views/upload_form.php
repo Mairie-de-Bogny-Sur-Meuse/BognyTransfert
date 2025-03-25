@@ -11,7 +11,7 @@
     <h1 class="text-2xl font-semibold text-center mb-6 text-gray-800">Envoyer un fichier</h1>
 
     <!-- upload_form.php -->
-<form id="uploadForm" enctype="multipart/form-data" class="space-y-4" method="POST">
+<form id="uploadForm" action="/upload" enctype="multipart/form-data" class="space-y-4" method="POST">
   <!-- Email -->
   <div>
   <label for="email" class="block font-medium text-gray-700">Votre e-mail* <span class="text-sm text-gray-500">(doit se terminer par @bognysurmeuse.fr)</span></label>

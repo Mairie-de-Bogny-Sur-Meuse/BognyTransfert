@@ -68,6 +68,7 @@ class UploadController
         // ✉️ Envoi du mail AVEC ta configuration exacte
         $mail = new PHPMailer(true);
         try {
+            $mail->SMTPDebug = \PHPMailer\PHPMailer\SMTP::DEBUG_SERVER;
             $mail->CharSet = 'UTF-8';
             $mail->Encoding = 'quoted-printable';
             $mail->isSMTP();
@@ -90,7 +91,7 @@ class UploadController
         }
 
         // 🔁 Redirection vers la page de saisie du code
-        header("Location: /verify?email=" . urlencode($email));
+        //header("Location: /verify?email=" . urlencode($email));
         exit;
     }
 }
