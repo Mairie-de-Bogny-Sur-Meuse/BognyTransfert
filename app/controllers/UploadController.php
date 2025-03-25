@@ -3,7 +3,6 @@ session_start();
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
-use PHPMailer\PHPMailer\SMTP;
 
 class UploadController
 {
@@ -16,54 +15,67 @@ class UploadController
         $password = $_POST['password'] ?? '';
         $files = $_FILES['files'];
 
-        // 🔐 Vérification du domaine autorisé
         if (!preg_match('/@bognysurmeuse\.fr$/', $email)) {
-            die("Email non autorisé. Seul @bognysurmeuse.fr est accepté.");
+            die("Email non autorisé.");
         }
 
-        // 🧠 Enregistrer temporairement les infos dans la session
+        $tempPath = $config['temp_upload_path'] . $uuid;
+
+        if (!mkdir($tempPath, 0755, true)) {
+            die("Erreur : impossible de créer le dossier temporaire.");
+        }
+
+        $savedFiles = [];
+
+        for ($i = 0; $i < count($files['name']); $i++) {
+            $name = basename($files['name'][$i]);
+            $tmp = $files['tmp_name'][$i];
+            $destination = "$tempPath/$name";
+
+            if (!move_uploaded_file($tmp, $destination)) {
+                die("Erreur lors de l'enregistrement temporaire de $name.");
+            }
+
+            $savedFiles[] = $name;
+        }
+
         $_SESSION['pending_upload'] = [
             'email' => $email,
             'password' => $password,
-            'files' => $files,
-            'uuid' => $uuid
+            'uuid' => $uuid,
+            'files' => $savedFiles
         ];
 
-        // 🔐 Génération d’un code à usage unique
         $code = strtoupper(substr(bin2hex(random_bytes(3)), 0, 6));
         $expires = date('Y-m-d H:i:s', strtotime('+15 minutes'));
 
-        // 🔐 Stocker le code dans la base
         $stmt = $pdo->prepare("INSERT INTO email_verification_tokens (email, token, expires_at) VALUES (?, ?, ?)");
         $stmt->execute([$email, $code, $expires]);
 
-        // 📧 Envoi du code par mail
         $mail = new PHPMailer(true);
 
         try {
             $mail->CharSet = 'UTF-8';
             $mail->Encoding = 'quoted-printable';
             $mail->isSMTP();
-            $mail->Host       = 'ssl0.ovh.net';
-            $mail->SMTPAuth   = true;
-            $mail->Username   = REMOVED
-            $mail->Password   = 'REMOVED';
+            $mail->Host = 'ssl0.ovh.net';
+            $mail->SMTPAuth = true;
+            $mail->Username = REMOVED
+            $mail->Password = 'REMOVED';
             $mail->SMTPSecure = 'ssl';
-            $mail->Port       = 465;
+            $mail->Port = 465;
 
             $mail->setFrom('no-reply@bognysurmeuse.fr', 'BognyTransfert');
             $mail->addAddress($email);
-
             $mail->isHTML(true);
             $mail->Subject = 'Code de vérification pour votre envoi';
-            $mail->Body = "<p>Bonjour,</p><p>Voici votre code de vérification : <strong>$code</strong></p><p>Ce code est valable 15 minutes.</p>";
+            $mail->Body = "<p>Bonjour,<br>Voici votre code de vérification : <strong>$code</strong><br>Ce code est valable 15 minutes.</p>";
 
             $mail->send();
         } catch (Exception $e) {
-            error_log("Erreur d'envoi de code : " . $mail->ErrorInfo);
+            error_log("Erreur d'envoi de mail : " . $mail->ErrorInfo);
         }
 
-        // 🔁 Rediriger vers la page de vérification
         header("Location: /verify?email=" . urlencode($email));
         exit;
     }
