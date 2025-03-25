@@ -1,6 +1,7 @@
 <?php
 session_start();
-
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 class VerificationController
 {
     public function verify()
@@ -108,6 +109,7 @@ class VerificationController
     $this->deleteFolderRecursively($tempPath);
 
         // ✅ Redirection vers la confirmation
+        $this->sendConfirmationMail($email, $tokenDownload);
         $downloadUrl = "https://dl.bognysurmeuse.fr/download/$tokenDownload";
         require __DIR__ . '/../views/upload_success.php';
         exit;
@@ -127,5 +129,57 @@ class VerificationController
         }
         rmdir($folder);
     }
+    
+
+private function sendConfirmationMail($destinataire, $uuid)
+{
+    $config = require __DIR__ . '/../../config/config.php';
+    $downloadLink = "https://dl.bognysurmeuse.fr/download/$uuid";
+    $dateExpiration = (new DateTime('+30 days'))->format('d/m/Y');
+    $logoUrl = 'https://www.bognysurmeuse.fr/wp-content/uploads/2022/03/cropped-logo-site.png';
+
+    $html = '
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <img src="' . $logoUrl . '" alt="Logo Bogny-sur-Meuse" style="height: 60px;">
+        <h2 style="color: #111827; margin-top: 10px;">Votre envoi a bien été pris en compte ✅</h2>
+      </div>
+      <p style="color: #374151;"><strong>Lien de téléchargement :</strong></p>
+      <div style="background-color: #e0f2fe; padding: 10px; border-radius: 5px; word-wrap: break-word;">
+        <a href="' . $downloadLink . '" style="color: #2563eb;">' . $downloadLink . '</a>
+      </div>
+      <p style="color: #374151; margin-top: 20px;"><strong>Date d\'expiration :</strong> ' . $dateExpiration . '</p>
+      <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
+      <p style="font-size: 12px; color: #6b7280; text-align: center;">
+        Cet e-mail a été généré automatiquement depuis <strong>BognyTransfert</strong><br>
+        Un service de la Ville de <a href="https://www.bognysurmeuse.fr" style="color:#2563eb;">Bogny-sur-Meuse</a>
+      </p>
+    </div>';
+
+    $mail = new PHPMailer(true);
+    try {
+        $mail->isSMTP();
+        $mail->CharSet = 'UTF-8';
+        $mail->Encoding = 'quoted-printable';
+        $mail->Host = 'ssl0.ovh.net';
+        $mail->SMTPAuth = true;
+        $mail->Username = $config['Email_user'];
+        $mail->Password = $config['Email_password'];
+        $mail->SMTPSecure = 'ssl';
+        $mail->Port = 465;
+
+        $mail->setFrom('no-reply@bognysurmeuse.fr', 'BognyTransfert');
+        $mail->addAddress($destinataire);
+
+        $mail->isHTML(true);
+        $mail->Subject = 'Votre envoi sur BognyTransfert';
+        $mail->Body    = $html;
+
+        $mail->send();
+    } catch (Exception $e) {
+        error_log("Erreur envoi mail : " . $mail->ErrorInfo);
+    }
+}
+
     
 }

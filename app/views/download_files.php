@@ -59,24 +59,35 @@ sort($folders);
 $tree = [];
 
 foreach ($uploads as $file) {
-    $path = $file['file_name'];
-    $parts = explode('/', $path);
+  $path = $file['file_name'];
+  $parts = explode('/', $path);
 
-    // Supprime le dossier racine (ex : Rapport Quotidien)
-    array_shift($parts);
+  // Gestion du cas où le fichier est à la racine (pas de dossier)
+  if (count($parts) > 1) {
+      array_shift($parts); // Supprime le dossier racine (ex : Rapport Quotidien)
+  }
 
-    $current = &$tree;
-    for ($i = 0; $i < count($parts) - 1; $i++) {
-        $current = &$current['children'][$parts[$i]];
-    }
+  $current = &$tree;
 
-    $current['files'][] = [
-        'name' => end($parts),
-        'full_path' => $path,
-        'size' => $file['file_size'],
-        'uuid' => $file['uuid']
-    ];
+  // Construction de l’arborescence des dossiers
+  for ($i = 0; $i < count($parts) - 1; $i++) {
+      if (!isset($current['children'][$parts[$i]])) {
+          $current['children'][$parts[$i]] = [];
+      }
+      $current = &$current['children'][$parts[$i]];
+  }
+
+  // Ajout du fichier (même si le chemin est vide)
+  if (!empty($parts)) {
+      $current['files'][] = [
+          'name' => end($parts),
+          'full_path' => $path,
+          'size' => $file['file_size'],
+          'uuid' => $file['uuid']
+      ];
+  }
 }
+
 
 function renderTree($tree, $depth = 0) {
     if (!isset($tree['children']) && !isset($tree['files'])) return;
