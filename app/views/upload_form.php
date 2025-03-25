@@ -29,13 +29,13 @@
   <!-- Sélection fichiers -->
   <div>
     <label for="files" class="block text-sm font-medium text-gray-700">Fichiers individuels</label>
-    <input type="file" name="files[]" id="files" multiple class="mt-1 block w-full" />
+    <input type="file" name="files_flat[]" id="files" multiple class="mt-1 block w-full" />
   </div>
 
   <!-- Sélection dossier -->
   <div>
     <label for="folder" class="block text-sm font-medium text-gray-700">Ou dossier complet</label>
-    <input type="file" name="files[]" id="folder" webkitdirectory directory multiple class="mt-1 block w-full" />
+    <input type="file" name="files_tree[]" id="folder" webkitdirectory directory multiple class="mt-1 block w-full" />
   </div>
 
   <!-- Barre de progression -->
@@ -55,40 +55,33 @@
 
 <script>
   const form = document.getElementById('uploadForm');
+  const fileInputs = [document.getElementById('files'), document.getElementById('folder')];
   const progressBar = document.getElementById('progressBar');
   const progressContainer = document.getElementById('progressContainer');
-  const status = document.getElementById('uploadStatus');
+  const submitBtn = form.querySelector('button[type="submit"]');
 
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
+  // Désactive le bouton au chargement
+  submitBtn.disabled = true;
+  submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
-    const formData = new FormData(form);
-    const xhr = new XMLHttpRequest();
+  function updateProgress() {
+    const totalFiles = [...fileInputs].reduce((acc, input) => acc + input.files.length, 0);
+    if (totalFiles > 0) {
+      progressContainer.classList.remove('hidden');
+      progressBar.style.width = '100%';
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    } else {
+      progressBar.style.width = '0%';
+      progressContainer.classList.add('hidden');
+      submitBtn.disabled = true;
+      submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+  }
 
-    xhr.open('POST', '/upload', true);
-
-    xhr.upload.addEventListener('progress', function (e) {
-      if (e.lengthComputable) {
-        const percent = Math.round((e.loaded / e.total) * 100);
-        progressContainer.classList.remove('hidden');
-        progressBar.style.width = percent + '%';
-        status.innerText = `Téléchargement : ${percent}%`;
-      }
-    });
-
-    xhr.onload = function () {
-      if (xhr.status === 200) {
-        status.innerText = '✅ Upload terminé. Redirection...';
-        const email = form.querySelector('input[name="email"]').value;
-        window.location.href = '/verify?email=' + encodeURIComponent(email);
-      } else {
-        status.innerText = '❌ Erreur pendant l’envoi.';
-      }
-    };
-
-    xhr.send(formData);
-  });
+  fileInputs.forEach(input => input.addEventListener('change', updateProgress));
 </script>
+
 
   </div>
 

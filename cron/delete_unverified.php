@@ -15,7 +15,8 @@ $uuids = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
 foreach ($uuids as $uuid) {
     // Supprimer fichiers
-    $uploadDir = __DIR__ . '/../storage/uploads/' . $uuid;
+
+    $uploadDir = __DIR__ . '/../storage/tempUploads' . $uuid;
     if (is_dir($uploadDir)) {
         array_map('unlink', glob("$uploadDir/*"));
         rmdir($uploadDir);

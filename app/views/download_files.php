@@ -34,17 +34,93 @@ $expireIso = (new DateTime($uploads[0]['token_expire'], new DateTimeZone('Europe
       <p class="text-sm text-gray-600">⏳ Ce lien expirera dans <span id="countdown" class="font-semibold text-red-600">...</span></p>
     </div>
 
-    <ul class="divide-y divide-gray-200 mb-6">
-      <?php foreach ($uploads as $file): ?>
-        <li class="py-3 flex justify-between items-center">
-          <div>
-            <p class="font-semibold text-gray-700"><?= htmlspecialchars($file['file_name']) ?></p>
-            <p class="text-sm text-gray-500"><?= round($file['file_size'] / 1024 / 1024, 2) ?> Mo</p>
-          </div>
-          <a href="/download/file?uuid=<?= $file['uuid'] ?>&file=<?= urlencode($file['file_name']) ?>" class="text-blue-600 hover:underline">Télécharger</a>
-        </li>
-      <?php endforeach; ?>
-    </ul>
+   
+
+    <?php
+// 1. Extraire les dossiers uniques à partir des fichiers
+$folders = [];
+
+foreach ($uploads as $file) {
+    $path = $file['file_name'];
+    if (str_contains($path, '/')) {
+        $parts = explode('/', $path);
+        $folderPath = '';
+        for ($i = 0; $i < count($parts) - 1; $i++) {
+            $folderPath .= $parts[$i] . '/';
+            $folders[$folderPath] = true;
+        }
+    }
+}
+$folders = array_keys($folders);
+sort($folders);
+?>
+
+<?php
+$tree = [];
+
+foreach ($uploads as $file) {
+    $path = $file['file_name'];
+    $parts = explode('/', $path);
+
+    // Supprime le dossier racine (ex : Rapport Quotidien)
+    array_shift($parts);
+
+    $current = &$tree;
+    for ($i = 0; $i < count($parts) - 1; $i++) {
+        $current = &$current['children'][$parts[$i]];
+    }
+
+    $current['files'][] = [
+        'name' => end($parts),
+        'full_path' => $path,
+        'size' => $file['file_size'],
+        'uuid' => $file['uuid']
+    ];
+}
+
+function renderTree($tree, $depth = 0) {
+    if (!isset($tree['children']) && !isset($tree['files'])) return;
+
+    // 📁 Sous-dossiers
+    if (!empty($tree['children'])) {
+        foreach ($tree['children'] as $folderName => $subtree) {
+            echo '<li class="py-2 text-gray-600 font-semibold flex items-center" style="padding-left: ' . ($depth * 12) . 'px;">📂 ' . htmlspecialchars($folderName) . '</li>';
+            renderTree($subtree, $depth + 1);
+        }
+    }
+
+    // 📄 Fichiers
+    if (!empty($tree['files'])) {
+        foreach ($tree['files'] as $file) {
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $icon = match ($ext) {
+                'pdf' => '📄',
+                'doc', 'docx' => '📝',
+                'xls', 'xlsx' => '📊',
+                'ppt', 'pptx' => '📈',
+                'zip', 'rar' => '🗜️',
+                'jpg', 'jpeg', 'png', 'gif', 'webp' => '🖼️',
+                'mp4', 'avi', 'mkv' => '🎞️',
+                'mp3', 'wav' => '🎵',
+                default => '📁',
+            };
+            echo '<li class="py-3 flex justify-between items-center" style="padding-left: ' . ($depth * 12) . 'px;">';
+            echo '<div class="flex items-center">';
+            echo '<span class="mr-2 text-xl">' . $icon . '</span>';
+            echo '<div>';
+            echo '<p class="font-semibold text-gray-700 break-all">' . htmlspecialchars($file['name']) . '</p>';
+            echo '<p class="text-sm text-gray-500">' . round($file['size'] / 1024 / 1024, 2) . ' Mo</p>';
+            echo '</div></div>';
+            echo '<a href="/download/file?uuid=' . $file['uuid'] . '&file=' . urlencode($file['full_path']) . '" class="text-blue-600 hover:underline">Télécharger</a>';
+            echo '</li>';
+        }
+    }
+}
+?><ul class="divide-y divide-gray-200 mb-6">
+<?php renderTree($tree); ?>
+</ul>
+
+
 
     <form action="/download/all" method="POST">
       <input type="hidden" name="uuid" value="<?= htmlspecialchars($uuid) ?>">

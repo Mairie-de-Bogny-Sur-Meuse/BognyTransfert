@@ -45,6 +45,22 @@ class VerificationController
 
         // 📂 Déplacement des fichiers et enregistrement en base
         foreach ($fileNames as $relativePath) {
+            $filename = basename($relativePath);
+        
+            // 🚫 Sécurité : fichiers interdits
+            $dangerousExtensions = ['php', 'sh', 'exe', 'bat', 'cmd', 'js', 'py', 'pl'];
+            $ignoredFiles = ['Thumbs.db'];
+        
+            $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        
+            if (
+                str_starts_with($filename, '.') ||
+                in_array($filename, $ignoredFiles) ||
+                in_array($ext, $dangerousExtensions)
+            ) {
+                continue; // fichier ignoré
+            }
+            
             $src = $tempPath . $relativePath;
             $dst = $finalPath . $relativePath;
 
@@ -76,14 +92,29 @@ class VerificationController
             ]);
         }
 
-        // 🧹 Nettoyage session et suppression du dossier temporaire
-        unset($_SESSION['pending_upload']);
-        array_map('unlink', glob($tempPath . '*'));
-        rmdir($tempPath);
+            // 🧹 Nettoyage session et suppression récursive du dossier temporaire
+    unset($_SESSION['pending_upload']);
+    $this->deleteFolderRecursively($tempPath);
 
         // ✅ Redirection vers la confirmation
         $downloadUrl = "https://dl.bognysurmeuse.fr/download/$tokenDownload";
         require __DIR__ . '/../views/upload_success.php';
         exit;
     }
+    private function deleteFolderRecursively($folder) {
+        if (!is_dir($folder)) return;
+    
+        $items = scandir($folder);
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..') continue;
+            $path = $folder . DIRECTORY_SEPARATOR . $item;
+            if (is_dir($path)) {
+                $this->deleteFolderRecursively($path);
+            } else {
+                unlink($path);
+            }
+        }
+        rmdir($folder);
+    }
+    
 }

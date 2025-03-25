@@ -14,8 +14,7 @@ class UploadController
         $uuid = bin2hex(random_bytes(16));
         $email = $_POST['email'] ?? '';
         $password = $_POST['password'] ?? '';
-        $files = $_FILES['files'];
-
+        
         // ✅ Vérification de l’adresse email professionnelle
         if (!preg_match('/@bognysurmeuse\\.fr$/', $email)) {
             die("Email non autorisé. Seules les adresses @bognysurmeuse.fr sont acceptées.");
@@ -27,36 +26,72 @@ class UploadController
             die("Erreur : impossible de créer le dossier temporaire.");
         }
 
-        $savedFiles = []; // Stockera les chemins relatifs
+        $savedFiles = [];
 
-        // 🔄 Traitement de chaque fichier (y compris chemins relatifs type dossier/fichier.jpg)
-        for ($i = 0; $i < count($files['name']); $i++) {
-            $relativePath = $files['name'][$i];   // Ex: dossier/photo.jpg
-            $tmp = $files['tmp_name'][$i];
-
-            $destination = $tempPath . $relativePath;
-            $subDir = dirname($destination);
-
-            // 📂 Crée les sous-dossiers si nécessaires
-            if (!is_dir($subDir)) {
-                mkdir($subDir, 0755, true);
+        // 📁 Fichiers simples
+        if (!empty($_FILES['files_flat'])) {
+            $flat = $_FILES['files_flat'];
+            for ($i = 0; $i < count($flat['name']); $i++) {
+                $name = basename($flat['name'][$i]);
+                $tmp = $flat['tmp_name'][$i];
+                if (empty($name) || empty($tmp) || !is_uploaded_file($tmp)) continue;
+        
+                $destination = $tempPath . $name;
+                if (!move_uploaded_file($tmp, $destination)) {
+                    die("Erreur déplacement de $name");
+                }
+        
+                $savedFiles[] = $name;
             }
-
-            // 📥 Déplace le fichier
-            if (!move_uploaded_file($tmp, $destination)) {
-                die("Erreur lors de l’enregistrement temporaire de $relativePath.");
-            }
-
-            $savedFiles[] = $relativePath; // Enregistre le chemin relatif
         }
-
-        // 💾 Sauvegarde des infos dans la session pour traitement ultérieur
+        
+        // 📂 Fichiers avec structure de dossier
+        if (!empty($_FILES['files_tree'])) {
+            $files = $_FILES['files_tree'];
+            
+            for ($i = 0; $i < count($files['name']); $i++) {
+                $relativePath = $files['full_path'][$i] ?? $files['name'][$i];
+                $relativePath = ltrim($relativePath, "/\\");
+                $tmp = $files['tmp_name'][$i];
+            
+                // Sécurité : ignorer les fichiers vides, masqués ou temporaires
+                $filename = basename($relativePath);
+                $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                $ignored = ['.DS_Store', 'Thumbs.db', '.gitkeep'];
+                $dangerous = ['php', 'sh', 'exe', 'bat', 'cmd'];
+            
+                if (
+                    empty($relativePath) ||
+                    empty($tmp) ||
+                    !is_uploaded_file($tmp) ||
+                    str_starts_with($filename, '.') ||
+                    in_array($filename, $ignored) ||
+                    in_array($ext, $dangerous)
+                ) {
+                    continue;
+                }
+            
+                $destination = $tempPath . $relativePath;
+                $subDir = dirname($destination);
+                if (!is_dir($subDir)) mkdir($subDir, 0755, true);
+            
+                if (!move_uploaded_file($tmp, $destination)) {
+                    error_log("❌ Erreur déplacement de $relativePath");
+                }
+            
+                $savedFiles[] = $relativePath;
+            }
+            
+        }
+        
+        // Stockage temporaire
         $_SESSION['pending_upload'] = [
+            'uuid' => $uuid,
             'email' => $email,
             'password' => $password,
-            'uuid' => $uuid,
-            'files' => $savedFiles // juste les noms
+            'files' => $savedFiles
         ];
+        
 
         // 🔐 Génération du code de vérification
         $code = strtoupper(substr(bin2hex(random_bytes(3)), 0, 6));
@@ -66,6 +101,7 @@ class UploadController
         $stmt->execute([$email, $code, $expires]);
 
         // ✉️ Envoi du mail AVEC ta configuration exacte
+        error_log("[DEBUG] Tentative d'envoi du code de vérification à $email");
         $mail = new PHPMailer(true);
         try {
             $mail->SMTPDebug = \PHPMailer\PHPMailer\SMTP::DEBUG_SERVER;
@@ -91,7 +127,7 @@ class UploadController
         }
 
         // 🔁 Redirection vers la page de saisie du code
-        //header("Location: /verify?email=" . urlencode($email));
+        header("Location: /verify?email=" . urlencode($email));
         exit;
     }
 }
