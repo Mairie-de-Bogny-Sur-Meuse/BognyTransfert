@@ -3,6 +3,8 @@
 $uploads = $_uploads ?? [];
 $token = $_token ?? '';
 $uuid = $_uuid ?? '';
+$expireIso = (new DateTime($uploads[0]['token_expire'], new DateTimeZone('Europe/Paris')))
+->format(DateTime::ATOM); // ISO 8601 avec timezone
 ?>
 
 <!DOCTYPE html>
@@ -64,27 +66,32 @@ $uuid = $_uuid ?? '';
 
   <!-- ⏱️ JS Compte à rebours -->
   <script>
-    // Date d’expiration en UTC → injectée en PHP
-    const expireAt = new Date("<?= htmlspecialchars($uploads[0]['token_expire']) ?>").getTime();
+  const expireAt = new Date("<?= $expireIso ?>").getTime();
 
-    function updateCountdown() {
-      const now = new Date().getTime();
-      const distance = expireAt - now;
+  function updateCountdown() {
+    const now = new Date().getTime();
+    const distance = expireAt - now;
 
-      if (distance <= 0) {
-        document.getElementById("countdown").innerText = "expiré";
-        return;
-      }
-
-      const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const s = Math.floor((distance % (1000 * 60)) / 1000);
-
-      document.getElementById("countdown").innerText = `${h}h ${m}m ${s}s`;
+    if (distance <= 0) {
+      document.getElementById("countdown").innerText = "expiré";
+      return;
     }
 
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
-  </script>
+    const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const s = Math.floor((distance % (1000 * 60)) / 1000);
+
+    let text = '';
+    if (d > 0) text += `${d}j `;
+    text += `${h}h ${m}m ${s}s`;
+
+    document.getElementById("countdown").innerText = text;
+  }
+
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+</script>
+
 </body>
 </html>

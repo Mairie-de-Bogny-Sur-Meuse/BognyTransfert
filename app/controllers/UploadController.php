@@ -60,8 +60,8 @@ class UploadController
             $mail->isSMTP();
             $mail->Host = 'ssl0.ovh.net';
             $mail->SMTPAuth = true;
-            $mail->Username = REMOVED
-            $mail->Password = 'REMOVED';
+            $mail->Username = $config['Email_user'];
+            $mail->Password = $config['Email_password'];
             $mail->SMTPSecure = 'ssl';
             $mail->Port = 465;
 
