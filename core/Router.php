@@ -16,11 +16,7 @@ class Router
         } elseif ($uri === '/verify' && $_SERVER['REQUEST_METHOD'] === 'GET') {
             require 'app/views/verify_form.php';
 
-        } elseif ($uri === '/verify' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-            $controller = new VerificationController();
-            $controller->handleForm();
-
-        } elseif ($uri === '/download/file') {
+        }elseif ($uri === '/download/file') {
             $controller = new DownloadController();
             $controller->downloadSingle($_GET['uuid'] ?? '', $_GET['file'] ?? '');
 
@@ -32,7 +28,13 @@ class Router
             $controller = new DownloadController();
             $controller->handleDownload($matches[1]);
 
-        } else {
+        }elseif ($uri === '/verify' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            require_once 'app/controllers/VerificationController.php';
+            $controller = new VerificationController();
+            $controller->verify();
+        }elseif ($uri === '/upload_success') {
+            require 'app/views/upload_success.php';
+        }else {
             http_response_code(404);
             echo "404 - Page introuvable";
         }

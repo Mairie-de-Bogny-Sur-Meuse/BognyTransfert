@@ -9,7 +9,7 @@
   <form method="POST" action="/verify" class="bg-white p-6 rounded-lg shadow-md max-w-md w-full">
     <h1 class="text-xl font-semibold text-gray-700 mb-4">Code de vérification</h1>
     <input type="hidden" name="uuid" value="<?= htmlspecialchars($_GET['uuid'] ?? '') ?>">
-
+    <input type="hidden" name="email" value="<?= htmlspecialchars($_GET['email'] ?? '') ?>">
     <label for="code" class="block text-sm text-gray-700">Entrez le code reçu par e-mail :</label>
     <input type="text" name="code" id="code" maxlength="6" required
            class="mt-2 w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mb-4">

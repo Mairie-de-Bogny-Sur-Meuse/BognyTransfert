@@ -1,4 +1,6 @@
 <?php
+session_start();
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\SMTP;
@@ -10,15 +12,16 @@ class UploadController
     {
         $pdo = Database::connect();
         $config = require __DIR__ . '/../../config/config.php';
-
+        $uuid = bin2hex(random_bytes(16));
         $email = $_POST['email'] ?? '';
         $password = $_POST['password'] ?? '';
         $files = $_FILES['files'];
-
+       
         // 🔐 1. Validation email
         if (!preg_match('/@bognysurmeuse\.fr$/', $email)) {
             die("Email non autorisé. Seul @bognysurmeuse.fr est accepté.");
         }
+
 
         // 📦 2. Calcul taille totale des fichiers
         $totalSize = array_sum($files['size']);
@@ -43,7 +46,7 @@ class UploadController
         // 📂 4. Stockage fichiers
         $uuid = bin2hex(random_bytes(16));
         $token = bin2hex(random_bytes(32));
-        $expire = date('Y-m-d H:i:s', strtotime('+' . $config['token_validity_hours'] . ' hours'));
+        $expire = date('Y-m-d H:i:s', strtotime('+' . $config['token_validity_days'] . ' days'));
         $uploadPath = $config['storage_path'] . $uuid;
 
         if (!mkdir($uploadPath, 0755, true)) {
@@ -99,7 +102,8 @@ class UploadController
     try {
         // Config SMTP (à personnaliser selon ton serveur)
         //$mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
-        $mail->Encoding = 'base64';                                            //Send using SMTP
+        $mail->CharSet = 'UTF-8';
+        $mail->Encoding = 'quoted-printable';                                           //Send using SMTP
         $mail->isSMTP();
         $mail->Host       = 'ssl0.ovh.net';                     //Set the SMTP server to send through
         $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
