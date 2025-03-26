@@ -2,60 +2,48 @@
 
 class Router
 {
-    public function handleRequest()
+    private array $routes = [];
+
+    public function add(string $uri, string $controller, string $method = 'index'): void
     {
-        try {
-            $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-
-            if ($uri === '/' || $uri === '/upload-form') {
-                require 'app/views/upload_form.php';
-
-            } elseif ($uri === '/upload') {
-                $controller = new UploadController();
-                $controller->handleUpload();
-
-            } elseif ($uri === '/verify' && $_SERVER['REQUEST_METHOD'] === 'GET') {
-                require 'app/views/verify_form.php';
-
-            } elseif ($uri === '/download/file') {
-                $controller = new DownloadController();
-                $controller->downloadSingle($_GET['uuid'] ?? '', $_GET['file'] ?? '');
-
-            } elseif ($uri === '/download/all' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-                $controller = new DownloadController();
-                $controller->downloadZip($_POST['uuid'] ?? '');
-
-            } elseif (preg_match('#^/download/([a-z0-9]+)$#', $uri, $matches)) {
-                $controller = new DownloadController();
-                $controller->handleDownload($matches[1]);
-
-            } elseif ($uri === '/verify' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-                require_once 'app/controllers/VerificationController.php';
-                $controller = new VerificationController();
-                $controller->verify();
-
-            } elseif ($uri === '/upload_success') {
-                require 'app/views/upload_success.php';
-
-            } else {
-                $this->renderError(404);
-            }
-
-        } catch (Exception $e) {
-            error_log($e->getMessage());
-            $this->renderError(500);
-        }
+        $this->routes[$uri] = [
+            'controller' => $controller,
+            'method' => $method
+        ];
     }
 
-    private function renderError($code)
+    public function dispatch(string $uri): void
     {
-        http_response_code($code);
-        $errorView = "app/views/errors/{$code}.php";
+        $uri = parse_url($uri, PHP_URL_PATH);
 
-        if (file_exists($errorView)) {
-            require $errorView;
-        } else {
-            echo "<h1>Erreur {$code}</h1><p>Une erreur est survenue.</p>";
+        if (isset($this->routes[$uri])) {
+            $route = $this->routes[$uri];
+            $controllerName = $route['controller'];
+            $methodName = $route['method'];
+
+            $controllerFile = __DIR__ . "/../app/controllers/{$controllerName}.php";
+            if (!file_exists($controllerFile)) {
+                
+                http_response_code(404);
+                require_once __DIR__ . '/../app/views/errors/404.php';
+                exit;
+            }
+
+            require_once $controllerFile;
+            $controller = new $controllerName();
+
+            if (!method_exists($controller, $methodName)) {
+                http_response_code(404);
+                require_once __DIR__ . '/../app/views/errors/404.php';
+                exit;
+            }
+
+            $controller->$methodName();
+            return;
         }
+
+        // Route non trouvée
+        http_response_code(404);
+        require_once __DIR__ . '/../app/views/errors/404.php';
     }
 }

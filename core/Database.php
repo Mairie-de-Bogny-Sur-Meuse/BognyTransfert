@@ -2,19 +2,34 @@
 
 class Database
 {
-    private static $pdo = null;
+    private static $instance = null;
 
-    public static function connect()
+    public static function getInstance(): PDO
     {
-        if (self::$pdo === null) {
-            $config = require __DIR__ . '/../config/config.php';
-            self::$pdo = new PDO(
-                'mysql:host=' . $config['db_host'] . ';dbname=' . $config['db_name'] . ';charset=utf8mb4',
-                $config['db_user'],
-                $config['db_pass'],
-                [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-            );
+        if (self::$instance === null) {
+            $host = $_ENV['DB_HOST'] ?? 'localhost';
+            $dbname = $_ENV['DB_NAME'] ?? '';
+            $user = $_ENV['DB_USER'] ?? '';
+            $pass = $_ENV['DB_PASS'] ?? '';
+
+            try {
+                self::$instance = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass, [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                ]);
+            } catch (PDOException $e) {
+                http_response_code(500);
+                echo "<h1>Erreur de connexion à la base de données</h1><p>" . htmlspecialchars($e->getMessage()) . "</p>";
+                exit;
+            }
         }
-        return self::$pdo;
+
+        return self::$instance;
+    }
+
+    public static function connect(): PDO
+    {
+        return self::getInstance();
     }
 }

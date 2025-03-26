@@ -1,22 +1,10 @@
-# 🔐 Fichiers sensibles
-/config/config.php
-
-# 📁 Fichiers de stockage utilisateur
-/storage/uploads/
-/storage/archive/
-
-# 💬 Logs & temporaires
+/vendor/
+/.env
+/storage/logs/
+/storage/tmp/
+/public/uploads/*
+/public/assets/*
 *.log
-*.tmp
-*.zip
 *.bak
-
-# 💼 IDE / système
-.vscode/
-.idea/
 .DS_Store
 Thumbs.db
-
-# 📦 Composer
-/vendor/
-composer.lock
