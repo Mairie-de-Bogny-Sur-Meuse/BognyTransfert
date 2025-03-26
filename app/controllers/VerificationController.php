@@ -1,5 +1,6 @@
 <?php
 session_start();
+include_once 'Function.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 class VerificationController
@@ -12,9 +13,18 @@ class VerificationController
         $email = $_POST['email'] ?? '';
         $code = $_POST['code'] ?? '';
 
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            $title = "Attaque CSRF détecter";
+            $message = "❌ Attaque CSRF détecter.";
+            $code = 403;
+            require 'app/views/errors/custom_error.php';
+            return;
+        }
+        
+
         // ✅ Vérification du code
         $stmt = $pdo->prepare("SELECT * FROM email_verification_tokens WHERE email = ? AND token = ? AND expires_at > NOW()");
-        $stmt->execute([$email, $code]);
+        $stmt->execute([SecureSql($email), SecureSql($code)]);
         $token = $stmt->fetch();
 
         if (!$token || !isset($_SESSION['pending_upload'])) {
@@ -27,7 +37,7 @@ class VerificationController
 
         // ✅ Marquer le code comme utilisé
         $stmt = $pdo->prepare("UPDATE email_verification_tokens SET validated = 1 WHERE id = ?");
-        $stmt->execute([$token['id']]);
+        $stmt->execute([SecureSql($token['id'])]);
 
         // 🧠 Récupérer les données de session
         $data = $_SESSION['pending_upload'];
@@ -93,14 +103,14 @@ class VerificationController
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ");
             $stmt->execute([
-                $uuid,
-                $email,
-                $relativePath,
-                $dst,
-                $size,
-                $password ? password_hash($password, PASSWORD_DEFAULT) : null,
-                $tokenDownload,
-                $expire
+                SecureSql($uuid),
+                SecureSql($email),
+                SecureSql($relativePath),
+                SecureSql($dst),
+                SecureSql($size),
+                $password ? SecureSql(password_hash($password, PASSWORD_DEFAULT)) : null,
+                SecureSql($tokenDownload),
+                SecureSql($expire)
             ]);
         }
 

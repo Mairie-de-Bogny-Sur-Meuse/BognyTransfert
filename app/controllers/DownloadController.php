@@ -1,5 +1,5 @@
 <?php
-
+include_once 'Function.php';
 class DownloadController
 {
     public function handleDownload($token)
@@ -8,7 +8,7 @@ class DownloadController
 
     // 1. Récupération des fichiers liés au token
     $stmt = $pdo->prepare("SELECT * FROM uploads WHERE token = :token");
-    $stmt->execute(['token' => $token]);
+    $stmt->execute(['token' => SecureSql($token)]);
     $uploads = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     if (!$uploads) {
@@ -107,8 +107,8 @@ public function downloadSingle($uuid, $fileName)
 
     $stmt = $pdo->prepare("SELECT * FROM uploads WHERE uuid = :uuid AND file_name = :file_name");
     $stmt->execute([
-        'uuid' => $uuid,
-        'file_name' => $fileName
+        'uuid' => SecureSql($uuid),
+        'file_name' => SecureSql($fileName)
     ]);
 
     $file = $stmt->fetch();
@@ -126,7 +126,7 @@ public function downloadZip($uuid)
 {
     $pdo = Database::connect();
     $stmt = $pdo->prepare("SELECT * FROM uploads WHERE uuid = :uuid");
-    $stmt->execute(['uuid' => $uuid]);
+    $stmt->execute(['uuid' => SecureSql($uuid)]);
     $uploads = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     if (!$uploads) {
@@ -139,5 +139,4 @@ public function downloadZip($uuid)
 
     $this->serveZip($uploads);
 }
-
 }

@@ -1,6 +1,6 @@
 <?php
 session_start();
-
+include_once 'Function.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -111,7 +111,7 @@ class UploadController
         $expires = date('Y-m-d H:i:s', strtotime('+15 minutes'));
 
         $stmt = $pdo->prepare("INSERT INTO email_verification_tokens (email, token, expires_at) VALUES (?, ?, ?)");
-        $stmt->execute([$email, $code, $expires]);
+        $stmt->execute([SecureSql($email), SecureSql($code), SecureSql($expires)]);
 
         // ✉️ Envoi du mail AVEC ta configuration exacte
         error_log("[DEBUG] Tentative d'envoi du code de vérification à $email");
