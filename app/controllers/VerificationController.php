@@ -15,7 +15,7 @@ class VerificationController
 
         if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
             $title = "Attaque CSRF détecter";
-            $message = "❌ Attaque CSRF détecter.";
+            $message = "❌ Attaque CSRF détecter lors de la vérification du code.";
             $code = 403;
             require 'app/views/errors/custom_error.php';
             return;

@@ -1,3 +1,7 @@
+<?php
+session_start();
+$_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -18,7 +22,7 @@
     <p class="text-sm text-center text-gray-500">Envoyez des fichiers ou un dossier complet jusqu'à <strong>10 Go</strong>.</p>
 
     <form id="uploadForm" action="/upload" enctype="multipart/form-data" method="POST" class="space-y-5">
-
+       <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
       <!-- Email -->
       <div>
         <label for="email" class="block font-medium text-gray-700">Votre e-mail <span class="text-sm text-gray-500">(doit se terminer par @bognysurmeuse.fr)</span></label>

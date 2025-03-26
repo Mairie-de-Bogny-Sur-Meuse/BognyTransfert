@@ -5,7 +5,8 @@ class DownloadController
     public function handleDownload($token)
 {
     $pdo = Database::connect();
-
+    
+    
     // 1. Récupération des fichiers liés au token
     $stmt = $pdo->prepare("SELECT * FROM uploads WHERE token = :token");
     $stmt->execute(['token' => SecureSql($token)]);

@@ -1,4 +1,5 @@
 <?php
+session_start();
 // Variables transmises par le contrôleur
 $uploads = $_uploads ?? [];
 $token = $_token ?? '';
@@ -135,6 +136,7 @@ function renderTree($tree, $depth = 0) {
 
     <form action="/download/all" method="POST">
       <input type="hidden" name="uuid" value="<?= htmlspecialchars($uuid) ?>">
+      <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
       <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded font-semibold">
         📦 Télécharger tous les fichiers (.zip)
       </button>

@@ -14,6 +14,14 @@ class UploadController
         $uuid = bin2hex(random_bytes(16));
         $email = $_POST['email'] ?? '';
         $password = $_POST['password'] ?? '';
+
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            $title = "Attaque CSRF détecter";
+            $message = "❌ Attaque CSRF détecter lors de l'envoie des fichiers.";
+            $code = 403;
+            require 'app/views/errors/custom_error.php';
+            return;
+        }
         
         // ✅ Vérification de l’adresse email professionnelle
         if (!preg_match('/@bognysurmeuse\\.fr$/', $email)) {

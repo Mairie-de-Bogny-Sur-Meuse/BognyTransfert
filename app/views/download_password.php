@@ -1,3 +1,7 @@
+<?php
+session_start();
+$_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -9,8 +13,8 @@
   <form method="POST" class="bg-white p-6 rounded-lg shadow-md max-w-md w-full">
     <h1 class="text-xl font-semibold text-gray-700 mb-4">Mot de passe requis</h1>
     <p class="text-sm text-gray-500 mb-3">Ce lien est protégé par un mot de passe.</p>
-
-    <input type="password" name="password" placeholder="Mot de passe"
+    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+    <input type="password" name="password" placeholder="Mot de passe" placeholder="Veuillez entrer le mot de passe"
            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mb-4">
 
     <button type="submit"
