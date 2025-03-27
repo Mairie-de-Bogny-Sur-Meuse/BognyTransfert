@@ -58,37 +58,74 @@ class UploadController
         $dangerous = ['php', 'exe', 'sh', 'bat', 'cmd'];
         $ignored = ['.DS_Store', 'Thumbs.db', '.gitkeep'];
 
-        foreach (["files_flat", "files_tree"] as $key) {
-            if (!empty($_FILES[$key])) {
-                $files = $_FILES[$key];
+        require_once __DIR__ . '/../models/FileKeyModel.php';
+    $keyModel = new FileKeyModel();
 
-                for ($i = 0; $i < count($files['name']); $i++) {
-                    $relativePath = $files['full_path'][$i] ?? $files['name'][$i];
-                    $relativePath = ltrim($relativePath, '/\\');
-                    $filename = basename($relativePath);
-                    $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-                    $tmp = $files['tmp_name'][$i];
+    foreach (["files_flat", "files_tree"] as $key) {
+        if (!empty($_FILES[$key])) {
+            $files = $_FILES[$key];
 
-                    if (
-                        empty($relativePath) ||
-                        empty($tmp) ||
-                        !is_uploaded_file($tmp) ||
-                        str_starts_with($filename, '.') ||
-                        in_array($filename, $ignored) ||
-                        in_array($ext, $dangerous)
-                    ) continue;
+            for ($i = 0; $i < count($files['name']); $i++) {
+                $relativePath = $files['full_path'][$i] ?? $files['name'][$i];
+                $relativePath = ltrim($relativePath, '/\\');
+                $filename = basename($relativePath);
+                $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                $tmp = $files['tmp_name'][$i];
 
-                    $destination = $tempPath . $relativePath;
-                    $subDir = dirname($destination);
-                    if (!is_dir($subDir)) mkdir($subDir, 0755, true);
+                if (
+                    empty($relativePath) ||
+                    empty($tmp) ||
+                    !is_uploaded_file($tmp) ||
+                    str_starts_with($filename, '.') ||
+                    in_array($filename, ['.DS_Store', 'Thumbs.db', '.gitkeep']) ||
+                    in_array($ext, ['php', 'exe', 'sh', 'bat', 'cmd'])
+                ) continue;
 
-                    if (!move_uploaded_file($tmp, $destination)) continue;
+                $destination = $tempPath . $relativePath;
+                $subDir = dirname($destination);
+                if (!is_dir($subDir)) mkdir($subDir, 0755, true);
 
-                    error_log("[UPLOAD] Fichier déplacé : $destination");
-                    $savedFiles[] = $relativePath;
+                if (!move_uploaded_file($tmp, $destination)) continue;
+
+                // === 🔐 CHIFFREMENT SI DEMANDÉ ===
+                if ($encryptionLevel !== 'none') {
+                    $aesKey = random_bytes(32); // clé binaire (256 bits)
+                    $iv = random_bytes(openssl_cipher_iv_length('aes-256-cbc'));
+
+                    $data = file_get_contents($destination);
+                    $encryptedData = openssl_encrypt($data, 'aes-256-cbc', $aesKey, 0, $iv);
+                    file_put_contents($destination, $iv . $encryptedData);
+
+                    $encryptedKey = null;
+
+                    if ($encryptionLevel === 'aes') {
+                        $masterKey = $_ENV['MASTER_ENCRYPTION_KEY'];
+                        $encryptedKey = openssl_encrypt($aesKey, 'aes-256-cbc', $masterKey, 0, $iv);
+                    } elseif ($encryptionLevel === 'aes_rsa') {
+                        $publicKeyPath = $_ENV['RSA_PUBLIC_KEY_PATH'];
+                        $publicKey = file_get_contents($publicKeyPath);
+                        if (!$publicKey) {
+                            error_log("[Upload] Clé publique RSA introuvable à $publicKeyPath");
+                            continue;
+                        }
+                        openssl_public_encrypt($aesKey, $encryptedKeyRaw, $publicKey);
+                        $encryptedKey = base64_encode($encryptedKeyRaw);
+                    }
+
+                    $keyModel->storeKey([
+                        'uuid' => $uuid,
+                        'file_name' => $relativePath,
+                        'encrypted_key' => $encryptedKey,
+                        'iv' => $iv,
+                        'encryption_level' => $encryptionLevel
+                    ]);
                 }
+
+                $savedFiles[] = $relativePath;
             }
         }
+    }
+
 
         $linkBase = rtrim($_ENV['BASE_URL'] ?? 'https://dl.bognysurmeuse.fr', '/');
         $downloadLink = "$linkBase/d/$uuid";

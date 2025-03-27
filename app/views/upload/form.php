@@ -45,6 +45,22 @@ $maxFileSize = getenv('MAX_SIZE_PER_TRANSFER') ?: 10 * 1024 * 1024 * 1024; // 2 
                     Générer un lien uniquement
                 </label>
             </div>
+            <div class="mb-4">
+                <label for="encryption_level" class="block text-sm font-medium text-gray-700">
+                    Sécurité des fichiers :
+                </label>
+                <select id="encryption_level" name="encryption_level" required
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+                    
+                    <option value="none">🔓 Aucune protection</option>
+                    <option value="aes">🔐 Chiffrement sécurisé (AES)</option>
+                    <option value="aes_rsa">🔐🔐 Chiffrement avancé (AES + RSA)</option>
+                </select>
+
+                <p class="text-sm text-gray-500 mt-1">
+                    Choisissez le niveau de sécurité appliqué aux fichiers pendant le transfert.
+                </p>
+            </div>
 
             <div>
                 <label for="password" class="block font-semibold mb-1">Mot de passe (optionnel) :</label>
