@@ -22,7 +22,7 @@ class EmailTokenModel
     public function validateToken(string $email, string $token): bool
     {
         $stmt = $this->db->prepare("SELECT * FROM email_verification_tokens 
-            WHERE email = :email AND token = :token AND expires_at > NOW() AND validated = 0
+            WHERE email = :email AND token = :token AND expires_at > NOW() 
             LIMIT 1");
 
         $stmt->execute([
@@ -51,4 +51,27 @@ class EmailTokenModel
         $stmt->execute();
         return $stmt->rowCount();
     }
+    public function getTokenByEmail(string $email): ?array
+    {
+        $stmt = $this->db->prepare("SELECT * FROM email_verification_tokens WHERE email = :email LIMIT 1");
+        $stmt->execute([':email' => $email]);
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    }
+    public function getValidToken(string $email): ?array
+    {
+        $stmt = $this->db->prepare("SELECT * FROM email_verification_tokens WHERE email = :email AND expires_at > NOW() LIMIT 1");
+        $stmt->execute([':email' => $email]);
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    }
+
+    public function updateToken(string $email, string $code, string $expires): bool
+    {
+        $stmt = $this->db->prepare("UPDATE email_verification_tokens SET token = :code, expires_at = :expires, validated = 0 WHERE email = :email");
+        return $stmt->execute([
+            'code' => $code,
+            'expires' => $expires,
+            'email' => $email
+        ]);
+    }
+
 }
