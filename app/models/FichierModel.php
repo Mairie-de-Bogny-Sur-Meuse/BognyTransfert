@@ -67,14 +67,4 @@ class FichierModel
         $stmt->execute();
         return (int) $stmt->fetchColumn();
     }
-    public function updatePath(string $uuid, string $fileName, string $newPath): bool
-    {
-        $stmt = $this->db->prepare("UPDATE uploads SET file_path = :path WHERE uuid = :uuid AND file_name = :file_name");
-        return $stmt->execute([
-            'path' => $newPath,
-            'uuid' => $uuid,
-            'file_name' => $fileName
-        ]);
-}
-
 }

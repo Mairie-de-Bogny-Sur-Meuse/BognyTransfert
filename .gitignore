@@ -1,5 +1,5 @@
 /vendor/
-/.env
+*.env
 /storage/logs/
 /storage/tmp/
 /public/uploads/*

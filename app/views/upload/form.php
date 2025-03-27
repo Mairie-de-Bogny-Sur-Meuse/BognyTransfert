@@ -52,18 +52,6 @@ $maxFileSize = getenv('MAX_SIZE_PER_TRANSFER') ?: 10 * 1024 * 1024 * 1024; // 2 
                        class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring focus:border-blue-300">
             </div>
             
-            <div>
-                <label for="encryption_level" class="block font-semibold mb-1">Sécurité du fichier :</label>
-                <select id="encryption_level" name="encryption_level" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring focus:border-blue-300">
-                    <option value="none">🔓 Aucun chiffrement (fichier non protégé)</option>
-                    <option value="aes" selected>🔐 Chiffrement simple (recommandé)</option>
-                    <option value="aes_rsa">🔐🔐 Chiffrement renforcé (avec double protection)</option>
-                    <option value="maximum">🛡️ Chiffrement maximum (clé privée fournie par vous)</option>
-                </select>
-            </div>
-
-
             <div id="recipient-section">
                 <label for="recipient_email" class="block font-semibold mb-1">Adresse e-mail du destinataire :</label>
                 <input type="email" id="recipient_email" name="recipient_email" placeholder="destinataire@example.com"

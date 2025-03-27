@@ -49,15 +49,5 @@ class FileKeyModel
 
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
-    public function requiresUserKey(array $fichiers): bool
-    {
-        foreach ($fichiers as $fichier) {
-            $key = $this->getKey($fichier['uuid'], $fichier['file_name']);
-            if ($key && $key['encryption_level'] === 'maximum') {
-                return true;
-            }
-        }
-        return false;
-    }
 
 }
