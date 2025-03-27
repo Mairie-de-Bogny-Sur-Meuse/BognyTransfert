@@ -92,6 +92,7 @@
         echo '</ul>';
     }
     ?>
+    
 
     <div class="overflow-x-auto border border-gray-200 rounded-xl bg-white p-4">
       <?php renderTree($arborescence); ?>
@@ -103,6 +104,11 @@
         📦 Télécharger tous les fichiers
       </a>
     </div>
+    <div class="mt-10 text-center">
+    <a href="/upload" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-full shadow hover:bg-blue-700 transition duration-200">
+        📤 Transférer de nouveaux fichiers
+    </a>
+</div>
   </div>
 
   <script>

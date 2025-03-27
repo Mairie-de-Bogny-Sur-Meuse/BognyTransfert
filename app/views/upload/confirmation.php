@@ -35,11 +35,17 @@ unset($_SESSION['confirmation_data']);
             <!-- Zone lien de téléchargement -->
             <div class="bg-gray-50 border border-gray-300 rounded-xl p-4 mb-4">
                 <label class="block font-semibold mb-2">Lien de téléchargement :</label>
+                <div class="flex flex-col gap-2">
                 <div class="flex items-center gap-2">
                     <input id="downloadLink" type="text" readonly value="<?php echo htmlspecialchars($generatedLink); ?>"
                         class="flex-1 px-4 py-2 border border-gray-300 rounded-xl bg-white text-sm focus:outline-none">
                     <button onclick="copyLink()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Copier</button>
                 </div>
+                <a href="<?php echo htmlspecialchars($generatedLink); ?>" target="_blank" class="text-blue-600 hover:underline text-sm text-left">
+                    🌐 Ouvrir le lien dans un nouvel onglet
+                </a>
+            </div>
+
             </div>
         <?php else: ?>
             <p class="mb-2">Vos fichiers ont bien été envoyés à <strong><?= htmlspecialchars($recipient) ?></strong>.</p>
