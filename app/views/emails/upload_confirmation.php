@@ -1,6 +1,6 @@
 <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;border:1px solid #ddd;border-radius:10px;">
   <div style="text-align:center;margin-bottom:20px;">
-    <img src="<?= rtrim($_ENV['BaseUrl'], '/') ?>/assets/img/BOGNY_logo_Gradient.svg" alt="Logo Bogny" style="height:60px;">
+    <img src="<?= rtrim($_ENV['BaseUrl'], '/') ?>/assets/img/BOGNY_logo_Gradient.png" alt="Logo Bogny" style="height:60px;">
   </div>
 
   <h2 style="color:#2563eb;">✅ Vos fichiers sont prêts au téléchargement</h2>

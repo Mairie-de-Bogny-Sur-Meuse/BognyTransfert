@@ -35,10 +35,35 @@ $maxFileSize = getenv('MAX_SIZE_PER_TRANSFER') ?: 10 * 1024 * 1024 * 1024; // 2 
             </div>
 
             <div>
+                <label class="block font-semibold mb-1">Type d’envoi :</label>
+                <label class="inline-flex items-center mr-4">
+                    <input type="radio" name="upload_option" value="email" checked class="mr-2 option-toggle">
+                    Envoyer par email
+                </label>
+                <label class="inline-flex items-center">
+                    <input type="radio" name="upload_option" value="link_only" class="mr-2 option-toggle">
+                    Générer un lien uniquement
+                </label>
+            </div>
+
+            <div>
                 <label for="password" class="block font-semibold mb-1">Mot de passe (optionnel) :</label>
                 <input type="password" id="password" name="password" placeholder="Mot de passe pour protéger le fichier"
                        class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring focus:border-blue-300">
             </div>
+            
+            <div id="recipient-section">
+                <label for="recipient_email" class="block font-semibold mb-1">Adresse e-mail du destinataire :</label>
+                <input type="email" id="recipient_email" name="recipient_email" placeholder="destinataire@example.com"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring focus:border-blue-300">
+            </div>
+
+            <div id="message-section">
+                <label for="message" class="block font-semibold mb-1">Message (optionnel) :</label>
+                <textarea id="message" name="message" rows="3" placeholder="Votre message ici..."
+                        class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring focus:border-blue-300"></textarea>
+            </div>
+
 
             <div id="drop-zone" class="w-full border-4 border-dashed border-gray-300 rounded-xl p-6 text-center transition hover:bg-gray-50 cursor-pointer">
                 <p class="text-gray-500 mb-2">Glissez-déposez vos fichiers ici ou cliquez pour sélectionner</p>
@@ -135,6 +160,24 @@ $maxFileSize = getenv('MAX_SIZE_PER_TRANSFER') ?: 10 * 1024 * 1024 * 1024; // 2 
                 e.preventDefault();
             }
         });
+
+
+        const optionRadios = document.querySelectorAll('.option-toggle');
+        const recipientSection = document.getElementById('recipient-section');
+        const messageSection = document.getElementById('message-section');
+
+        function toggleUploadOption() {
+            const selected = document.querySelector('.option-toggle:checked').value;
+            const showExtra = selected === 'email';
+            recipientSection.style.display = showExtra ? 'block' : 'none';
+            messageSection.style.display = showExtra ? 'block' : 'none';
+
+            // Activation/désactivation validation
+            document.getElementById('recipient_email').required = showExtra;
+        }
+        optionRadios.forEach(r => r.addEventListener('change', toggleUploadOption));
+        window.addEventListener('DOMContentLoaded', toggleUploadOption);
+
     </script>
 </body>
 </html>
