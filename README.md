@@ -197,4 +197,3 @@ En cas de problème, contactez l’administrateur :
 ## 🏛️ Licence
 
 Projet développé pour la commune de **Bogny-sur-Meuse**. Usage restreint.
-```
