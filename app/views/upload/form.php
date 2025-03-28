@@ -53,7 +53,7 @@ $maxFileSize = getenv('MAX_SIZE_PER_TRANSFER') ?: 10 * 1024 * 1024 * 1024; // 2 
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
                     
                     <option value="none">🔓 Aucune protection</option>
-                    <option value="aes">🔐 Chiffrement sécurisé (AES)</option>
+                    <option value="aes" selected>🔐 Chiffrement sécurisé (AES)</option>
                     <option value="aes_rsa">🔐🔐 Chiffrement avancé (AES + RSA)</option>
                 </select>
 

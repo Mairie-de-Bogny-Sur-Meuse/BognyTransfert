@@ -111,6 +111,7 @@ class VerifyController
     $expireDate = date('d/m/Y à H:i', strtotime('+30 days'));
     $downloadLink = $_SESSION['generated_link'];
     $hasPassword = !empty($upload['password']);
+    $encryptionLevel = $upload['encryption_level'] ?? 'none';
 
     ob_start();
     require __DIR__ . '/../views/emails/upload_confirmation.php';
@@ -142,6 +143,7 @@ class VerifyController
     // Envoi au destinataire si nécessaire
     if ($uploadOption === 'email' && $recipient) {
         try {
+            $encryptionLevel = $upload['encryption_level'] ?? 'none';
             ob_start();
             require __DIR__ . '/../views/emails/upload_notification.php';
             $notifBody = ob_get_clean();

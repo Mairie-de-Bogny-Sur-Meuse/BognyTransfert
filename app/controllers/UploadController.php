@@ -149,8 +149,10 @@ class UploadController
         'recipient' => $recipient,
         'message' => $message,
         'upload_option' => $uploadOption,
-        'download_link' => $downloadLink
+        'download_link' => $downloadLink,
+        'encryption_level' => $_POST['encryption_level'] ?? 'none' // 🔐 Ajouté
     ];
+    
 
     // 📮 Envoi du code ou réutilisation si toujours valide
     require_once __DIR__ . '/../models/EmailTokenModel.php';
