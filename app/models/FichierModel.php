@@ -66,6 +66,11 @@ class FichierModel
         $stmt->execute();
         return $stmt->rowCount();
     }
+    public function deleteById(int $id): bool
+    {
+        $stmt = $this->db->prepare("DELETE FROM uploads WHERE id = :id");
+        return $stmt->execute([':id' => $id]);
+    }
 
     public function countByEmailThisMonth(string $email): int
     {

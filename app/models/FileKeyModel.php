@@ -34,6 +34,14 @@ class FileKeyModel
             'encryption_level_2' => $data['encryption_level'],
         ]);
     }
+    public function deleteByUuidAndFile(string $uuid, string $fileName): bool
+    {
+        $stmt = $this->db->prepare("DELETE FROM file_keys WHERE uuid = :uuid AND file_name = :file_name");
+        return $stmt->execute([
+            ':uuid' => $uuid,
+            ':file_name' => $fileName
+        ]);
+    }
 
 
     /**
