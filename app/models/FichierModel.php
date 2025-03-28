@@ -52,6 +52,13 @@ class FichierModel
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    public function findAllExpired(): array
+    {
+        $stmt = $this->db->prepare("SELECT * FROM uploads WHERE token_expire < NOW()");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
 
     public function deleteExpired(): int
     {
