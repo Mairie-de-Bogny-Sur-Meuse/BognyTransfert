@@ -91,10 +91,28 @@ $maxFileSize = getenv('MAX_SIZE_PER_TRANSFER') ?: 10 * 1024 * 1024 * 1024; // 2 
 
             <div id="file-info" class="text-sm text-gray-600"></div>
             <div id="error-message" class="text-red-600 text-sm mt-2 font-semibold"></div>
+            <p id="redirectMessage" class="text-center text-blue-600 font-semibold mt-4 hidden">
+                ✅ Fichier envoyé. Redirection en cours, veuillez patienter…
+            </p>
+
+            <!-- Barre de progression -->
+            <div id="progressContainer" class="w-full bg-gray-300 rounded h-4 mt-4 hidden">
+                <div id="progressBar" class="h-4 bg-green-500 rounded w-0 transition-all duration-300 ease-in-out"></div>
+            </div>
+            <p id="progressText" class="text-sm mt-2 hidden text-center">
+                Chargement : <span id="progressValue">0%</span>
+            </p>
+            <p id="uploadDetails" class="text-sm text-center mt-1 hidden">
+                🔄 <span id="uploadPercent">0%</span> – <span id="uploadSpeed">0 Mo/s</span> | <span id="uploadSent">0 / 0 Mo</span>
+            </p>
+
 
             <div class="text-center">
                 <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition">Envoyer</button>
             </div>
+                        <!-- Barre de progression -->
+           
+
         </form>
         <?php include_once __DIR__ . '/../partials/footer.php'; ?>
     </div>
@@ -141,13 +159,8 @@ $maxFileSize = getenv('MAX_SIZE_PER_TRANSFER') ?: 10 * 1024 * 1024 * 1024; // 2 
             return true;
         }
 
-        filesFlatInput.addEventListener('change', () => {
-            updateFileInfo(filesFlatInput.files);
-        });
-
-        filesTreeInput.addEventListener('change', () => {
-            updateFileInfo(filesTreeInput.files);
-        });
+        filesFlatInput.addEventListener('change', () => updateFileInfo(filesFlatInput.files));
+        filesTreeInput.addEventListener('change', () => updateFileInfo(filesTreeInput.files));
 
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
             dropZone.addEventListener(evt, e => {
@@ -172,12 +185,74 @@ $maxFileSize = getenv('MAX_SIZE_PER_TRANSFER') ?: 10 * 1024 * 1024 * 1024; // 2 
         });
 
         uploadForm.addEventListener('submit', e => {
-            const isValid = updateFileInfo(filesFlatInput.files.length ? filesFlatInput.files : filesTreeInput.files);
-            if (!isValid) {
-                e.preventDefault();
-            }
-        });
+            e.preventDefault();
 
+            const files = filesFlatInput.files.length ? filesFlatInput.files : filesTreeInput.files;
+            const isValid = updateFileInfo(files);
+            if (!isValid) return;
+
+            const formData = new FormData(uploadForm);
+
+            document.getElementById('progressContainer').classList.remove('hidden');
+            document.getElementById('progressText').classList.remove('hidden');
+            document.getElementById('uploadDetails').classList.remove('hidden');
+
+            const xhr = new XMLHttpRequest();
+            let lastTime = Date.now();
+            let lastLoaded = 0;
+
+            xhr.upload.addEventListener('progress', function (e) {
+                if (e.lengthComputable) {
+                    const now = Date.now();
+                    const deltaTime = (now - lastTime) / 1000;
+                    const deltaLoaded = e.loaded - lastLoaded;
+
+                    const speed = deltaLoaded / deltaTime; // bytes/sec
+                    const speedMB = (speed / (1024 * 1024)).toFixed(2);
+
+                    const sentMB = (e.loaded / (1024 * 1024)).toFixed(1);
+                    const totalMB = (e.total / (1024 * 1024)).toFixed(1);
+                    const percent = Math.round((e.loaded / e.total) * 100);
+
+                    document.getElementById('progressBar').style.width = percent + '%';
+                    document.getElementById('progressValue').textContent = percent + '%';
+
+                    document.getElementById('uploadPercent').textContent = percent + '%';
+                    document.getElementById('uploadSpeed').textContent = speedMB + ' Mo/s';
+                    document.getElementById('uploadSent').textContent = `${sentMB} / ${totalMB} Mo`;
+
+                    // Si 100%, cacher tout et afficher le message
+                    if (percent >= 100) {
+                        document.getElementById('progressContainer').classList.add('hidden');
+                        document.getElementById('progressText').classList.add('hidden');
+                        document.getElementById('uploadDetails').classList.add('hidden');
+                        document.getElementById('redirectMessage').classList.remove('hidden');
+                    }
+
+
+                    lastTime = now;
+                    lastLoaded = e.loaded;
+                }
+            });
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    try {
+                        const res = JSON.parse(xhr.responseText);
+                        if (xhr.status === 200 && res.redirect) {
+                            window.location.href = res.redirect;
+                        } else {
+                            errorMessage.textContent = "Une erreur est survenue lors de l'envoi.";
+                        }
+                    } catch (err) {
+                        errorMessage.textContent = "Erreur de réponse serveur.";
+                    }
+                }
+            };
+
+            xhr.open('POST', uploadForm.action, true);
+            xhr.send(formData);
+        });
 
         const optionRadios = document.querySelectorAll('.option-toggle');
         const recipientSection = document.getElementById('recipient-section');
@@ -188,14 +263,12 @@ $maxFileSize = getenv('MAX_SIZE_PER_TRANSFER') ?: 10 * 1024 * 1024 * 1024; // 2 
             const showExtra = selected === 'email';
             recipientSection.style.display = showExtra ? 'block' : 'none';
             messageSection.style.display = showExtra ? 'block' : 'none';
-
-            // Activation/désactivation validation
             document.getElementById('recipient_email').required = showExtra;
         }
         optionRadios.forEach(r => r.addEventListener('change', toggleUploadOption));
         window.addEventListener('DOMContentLoaded', toggleUploadOption);
+</script>
 
-    </script>
 
 </body>
 </html>

@@ -203,7 +203,11 @@ class UploadController
     }
 
     // 🔁 Redirection vers la vérification du code
-    header("Location: /verify?email=" . urlencode($email));
+    //header("Location: /verify?email=" . urlencode($email));
+    // Exemple de code généré, à adapter selon ton système
+    $response = ['redirect' => '/verify?email=' . urlencode($email)];
+    echo json_encode($response);
+        
     exit;
 }
 
