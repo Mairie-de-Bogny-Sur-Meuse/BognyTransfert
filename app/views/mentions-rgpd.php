@@ -48,14 +48,50 @@
 
         <h2 class="text-xl font-semibold mt-6 mb-2">6. Conditions Générales d’Utilisation (CGU)</h2>
         <p class="mb-4">
-            En utilisant ce service :
-            <ul class="list-disc ml-6">
-                <li>Vous acceptez de ne pas transférer de contenus illicites ou dangereux.</li>
-                <li>Vous acceptez que vos fichiers soient supprimés automatiquement selon les délais définis.</li>
-                <li>Vous êtes seul responsable des données que vous transférez.</li>
-                <li>Le service est fourni sans garantie. En cas de perte de données, la Ville de Bogny-sur-Meuse ne pourra être tenue responsable.</li>
-            </ul>
+            L’utilisation du service <strong>BognyTransfert</strong> implique l’acceptation pleine et entière des présentes conditions générales d’utilisation. Tout utilisateur s’engage à les respecter.
         </p>
+
+        <h3 class="text-lg font-semibold mt-4 mb-2">6.1. Utilisation responsable du service</h3>
+        <p class="mb-4">
+            Le service est destiné uniquement à l’échange temporaire de fichiers dans un cadre professionnel ou administratif. Il est interdit d’utiliser le service pour :
+        </p>
+        <ul class="list-disc ml-6 mb-4">
+            <li>transférer des fichiers contenant des contenus illégaux, diffamatoires, violents, pornographiques ou incitant à la haine,</li>
+            <li>partager des fichiers violant les droits d’auteur, brevets, marques ou secrets commerciaux,</li>
+            <li>diffuser des virus, chevaux de Troie, ou tout autre code malveillant,</li>
+            <li>utiliser le service à des fins de spamming ou d’attaques informatiques.</li>
+        </ul>
+
+        <h3 class="text-lg font-semibold mt-4 mb-2">6.2. Responsabilités de l’utilisateur</h3>
+        <p class="mb-4">
+            L’utilisateur est seul responsable des fichiers qu’il transfère via la plateforme. Il lui appartient de s’assurer que les fichiers ne portent pas atteinte à des tiers et respectent la législation en vigueur.
+        </p>
+
+        <h3 class="text-lg font-semibold mt-4 mb-2">6.3. Durée de conservation</h3>
+        <p class="mb-4">
+            Les fichiers sont automatiquement supprimés selon les règles suivantes :
+        </p>
+        <ul class="list-disc ml-6 mb-4">
+            <li>Fichiers temporaires : suppression automatique après 15 minutes,</li>
+            <li>Fichiers publics : suppression automatique après 30 jours,</li>
+            <li>Fichiers archivés : suppression automatique après 90 jours.</li>
+        </ul>
+
+        <h3 class="text-lg font-semibold mt-4 mb-2">6.4. Limitation de responsabilité</h3>
+        <p class="mb-4">
+            Bien que la Ville de Bogny-sur-Meuse mette en œuvre des mesures de sécurité élevées, elle ne peut garantir l’absence totale de défaillance technique, de perte de données ou d’interruption de service. En conséquence :
+        </p>
+        <ul class="list-disc ml-6 mb-4">
+            <li>l’utilisateur accepte d’utiliser le service à ses propres risques,</li>
+            <li>la Ville de Bogny-sur-Meuse ne pourra être tenue responsable en cas de perte, altération, ou interception de fichiers,</li>
+            <li>aucune indemnisation ne pourra être réclamée en cas de dysfonctionnement ou d’indisponibilité temporaire du service.</li>
+        </ul>
+
+        <h3 class="text-lg font-semibold mt-4 mb-2">6.5. Modifications des CGU</h3>
+        <p class="mb-4">
+            La Ville de Bogny-sur-Meuse se réserve le droit de modifier les présentes conditions à tout moment. Les utilisateurs seront informés des changements via le site. L’utilisation continue du service vaut acceptation des conditions mises à jour.
+        </p>
+
 
         <p class="text-sm text-gray-500 mt-8">
             Dernière mise à jour : <?= date("d/m/Y") ?>
