@@ -79,4 +79,18 @@ class FichierModel
         $stmt->execute();
         return (int) $stmt->fetchColumn();
     }
+    public function getPasswordHash($uuid, $fileName)
+    {
+        $stmt = $this->db->prepare("SELECT password_hash FROM uploads WHERE uuid = ? AND file_name = ?");
+        $stmt->execute([$uuid, $fileName]);
+        return $stmt->fetchColumn();
+    }
+    public function getPasswordHashByToken($token)
+    {
+        $stmt = $this->db->prepare("SELECT password_hash FROM uploads WHERE token = ?");
+        $stmt->execute([$token]);
+        return $stmt->fetchColumn();
+    }
+
+
 }
