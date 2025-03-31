@@ -88,7 +88,7 @@
 
         <h2 class="text-2xl font-semibold mt-8 mb-2">9. Délégué à la protection des données (DPO)</h2>
         <p class="mb-4">
-            Le DPO de la Ville de Bogny-sur-Meuse peut être contacté pour toute question relative à la protection des données à caractère personnel : <a href="mailto:dpo@bognysurmeuse.fr" class="text-blue-600 underline">dpo@bognysurmeuse.fr</a>
+            Le DPO de la Ville de Bogny-sur-Meuse peut être contacté pour toute question relative à la protection des données à caractère personnel : <a href="mailto:informatique@bognysurmeuse.fr" class="text-blue-600 underline">informatique@bognysurmeuse.fr</a>
         </p>
 
         <h2 class="text-2xl font-semibold mt-8 mb-2">10. Réclamations</h2>
@@ -96,6 +96,14 @@
             En cas de non-respect de vos droits, vous pouvez introduire une réclamation auprès de la CNIL (Commission Nationale de l’Informatique et des Libertés) :
             <br>
             <a href="https://www.cnil.fr" class="text-blue-600 underline">https://www.cnil.fr</a>
+        </p>
+
+        <h2 class="text-2xl font-semibold mt-8 mb-2">11. Utilisation des cookies et sessions PHP</h2>
+        <p class="mb-4">
+            Le site <strong>BognyTransfert</strong> n’utilise aucun cookie à des fins publicitaires, analytiques ou de suivi. Le seul cookie utilisé est un cookie de session PHP (<code>PHPSESSID</code>), strictement nécessaire au bon fonctionnement du service.
+        </p>
+        <p class="mb-4">
+            Conformément aux lignes directrices de la CNIL, ce cookie de session est exempté de consentement car il permet de maintenir la connexion sécurisée de l’utilisateur, de gérer les transferts de fichiers et de garantir la continuité du service.
         </p>
 
         <p class="text-sm text-gray-500 mt-8">
