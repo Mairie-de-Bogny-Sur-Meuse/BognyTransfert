@@ -96,15 +96,40 @@ $maxFileSize = getenv('MAX_SIZE_PER_TRANSFER') ?: 10 * 1024 * 1024 * 1024; // 2 
             </p>
 
             <!-- Barre de progression -->
-            <div id="progressContainer" class="w-full bg-gray-300 rounded h-4 mt-4 hidden">
-                <div id="progressBar" class="h-4 bg-green-500 rounded w-0 transition-all duration-300 ease-in-out"></div>
-            </div>
-            <p id="progressText" class="text-sm mt-2 hidden text-center">
-                Chargement : <span id="progressValue">0%</span>
-            </p>
-            <p id="uploadDetails" class="text-sm text-center mt-1 hidden">
-                🔄 <span id="uploadPercent">0%</span> – <span id="uploadSpeed">0 Mo/s</span> | <span id="uploadSent">0 / 0 Mo</span>
-            </p>
+        <div id="progressContainer" class="w-full bg-gray-300 rounded h-4 mt-4 overflow-hidden hidden">
+            <div id="progressBar" class="h-4 text-xs font-semibold text-white text-center w-0 transition-all duration-300 ease-in-out progress-bar-animated">0%</div>
+        </div>
+        <p id="progressText" class="text-sm mt-2 hidden text-center">
+            Chargement : <span id="progressValue">0%</span>
+        </p>
+        <p id="uploadDetails" class="text-sm text-center mt-1 hidden">
+            🔄 <span id="uploadPercent">0%</span> – <span id="uploadSpeed">0 Mo/s</span> | <span id="uploadSent">0 / 0 Mo</span>
+        </p>
+
+        <style>
+        .progress-bar-animated {
+            background-color: #22c55e; /* Tailwind green-500 */
+            background-image: linear-gradient(
+                45deg,
+                rgba(255, 255, 255, 0.2) 25%,
+                transparent 25%,
+                transparent 50%,
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(255, 255, 255, 0.2) 75%,
+                transparent 75%,
+                transparent
+            );
+            background-size: 1rem 1rem;
+            background-blend-mode: overlay;
+            animation: progress-bar-stripes 1s linear infinite;
+        }
+
+        @keyframes progress-bar-stripes {
+            0% { background-position: 1rem 0; }
+            100% { background-position: 0 0; }
+        }
+        </style>
+
 
 
             <div class="text-center">
