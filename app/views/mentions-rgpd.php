@@ -14,7 +14,7 @@
         <p class="mb-4">
             Ville de Bogny-sur-Meuse<br>
             1 Place de l'Hôtel de Ville, 08120 Bogny-sur-Meuse<br>
-            Email : mairie@bognysurmeuse.fr
+            Email : informatique@bognysurmeuse.fr
         </p>
 
         <h2 class="text-xl font-semibold mt-6 mb-2">2. Finalité des données collectées</h2>
@@ -38,7 +38,7 @@
 
         <h2 class="text-xl font-semibold mt-6 mb-2">4. Vos droits</h2>
         <p class="mb-4">
-            Vous pouvez demander l’accès, la rectification ou la suppression de vos données personnelles par email à <a href="mailto:mairie@bognysurmeuse.fr" class="text-blue-600 underline">mairie@bognysurmeuse.fr</a>.
+            Vous pouvez demander l’accès, la rectification ou la suppression de vos données personnelles par email à <a href="mailto:informatique@bognysurmeuse.fr" class="text-blue-600 underline">informatique@bognysurmeuse.fr</a>.
         </p>
 
         <h2 class="text-xl font-semibold mt-6 mb-2">5. Sécurité</h2>
