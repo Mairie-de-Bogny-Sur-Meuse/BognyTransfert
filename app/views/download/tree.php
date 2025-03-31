@@ -36,7 +36,7 @@
       ✅ Valider
     </button>
   </form>
-
+  <?php include_once __DIR__ . '/../partials/footer.php'; ?>
   <?php return; ?>
 <?php endif; ?>
 
