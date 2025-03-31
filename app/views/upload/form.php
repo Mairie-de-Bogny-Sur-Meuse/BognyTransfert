@@ -106,11 +106,18 @@ $maxFileSize = getenv('MAX_SIZE_PER_TRANSFER') ?: 10 * 1024 * 1024 * 1024; // 2 
 
     <!-- Progression séparée du formulaire -->
     <div id="upload-progress" class="mt-6 hidden">
+    
+
       <div id="progressContainer" class="w-full bg-gray-300 rounded h-4 overflow-hidden">
         <div id="progressBar" class="h-4 w-0 text-white text-center text-xs font-semibold transition-all duration-300 ease-in-out progress-bar-animated">0%</div>
       </div>
       <p id="progressText" class="text-sm mt-2 text-center">Chargement : <span id="progressValue">0%</span></p>
       <p id="uploadDetails" class="text-sm text-center mt-1">🔄 <span id="uploadPercent">0%</span> – <span id="uploadSpeed">0</span> | <span id="uploadSent">0 / 0</span></p>
+      <div class="text-center mt-4">
+        <button id="cancelUpload" class="px-4 py-1 rounded-full bg-red-600 text-white hover:bg-red-700 transition hidden">
+          ❌ Annuler l'envoi
+        </button>
+      </div>
       <div id="redirectMessage" class="text-center text-blue-600 font-semibold mt-4 hidden">
         <div class="flex items-center justify-center space-x-2">
           <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -125,163 +132,206 @@ $maxFileSize = getenv('MAX_SIZE_PER_TRANSFER') ?: 10 * 1024 * 1024 * 1024; // 2 
     <?php include_once __DIR__ . '/../partials/footer.php'; ?>
   </div>
 
-    <script>
-        const dropZone = document.getElementById('drop-zone');
-        const filesFlatInput = document.getElementById('files_flat');
-        const filesTreeInput = document.getElementById('files_tree');
-        const chooseFilesBtn = document.getElementById('choose-files');
-        const chooseFolderBtn = document.getElementById('choose-folder');
-        const fileInfo = document.getElementById('file-info');
-        const errorMessage = document.getElementById('error-message');
-        const uploadForm = document.getElementById('upload-form');
+  <script>
+  const dropZone = document.getElementById('drop-zone');
+  const filesFlatInput = document.getElementById('files_flat');
+  const filesTreeInput = document.getElementById('files_tree');
+  const chooseFilesBtn = document.getElementById('choose-files');
+  const chooseFolderBtn = document.getElementById('choose-folder');
+  const fileInfo = document.getElementById('file-info');
+  const errorMessage = document.getElementById('error-message');
+  const uploadForm = document.getElementById('upload-form');
+  const cancelBtn = document.getElementById('cancelUpload');
 
-        const maxTotalSize = <?php echo json_encode($maxTotalSize); ?>;
-        const maxFileSize = <?php echo json_encode($maxFileSize); ?>;
+  const maxTotalSize = <?php echo json_encode($maxTotalSize); ?>;
+  const maxFileSize = <?php echo json_encode($maxFileSize); ?>;
 
-        chooseFilesBtn.addEventListener('click', () => filesFlatInput.click());
-        chooseFolderBtn.addEventListener('click', () => filesTreeInput.click());
+  chooseFilesBtn.addEventListener('click', () => filesFlatInput.click());
+  chooseFolderBtn.addEventListener('click', () => filesTreeInput.click());
 
-        function updateFileInfo(files) {
-            let totalSize = 0;
-            let tooBig = false;
-            for (const file of files) {
-                totalSize += file.size;
-                if (file.size > maxFileSize) {
-                    tooBig = true;
-                }
-            }
+  function updateFileInfo(files) {
+      let totalSize = 0;
+      let tooBig = false;
+      for (const file of files) {
+          totalSize += file.size;
+          if (file.size > maxFileSize) tooBig = true;
+      }
 
-            if (tooBig) {
-                errorMessage.textContent = "Un ou plusieurs fichiers dépassent la taille maximale autorisée (2 Go).";
-                return false;
-            }
+      if (tooBig) {
+          errorMessage.textContent = "Un ou plusieurs fichiers dépassent la taille maximale autorisée (2 Go).";
+          return false;
+      }
 
-            if (totalSize > maxTotalSize) {
-                errorMessage.textContent = "La taille totale dépasse la limite de 10 Go.";
-                return false;
-            }
+      if (totalSize > maxTotalSize) {
+          errorMessage.textContent = "La taille totale dépasse la limite de 10 Go.";
+          return false;
+      }
 
-            const sizeMB = (totalSize / (1024 * 1024)).toFixed(2);
-            fileInfo.textContent = `${files.length} fichier(s), ${sizeMB} Mo`;
-            errorMessage.textContent = "";
-            return true;
-        }
+      const sizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+      fileInfo.textContent = `${files.length} fichier(s), ${sizeMB} Mo`;
+      errorMessage.textContent = "";
+      return true;
+  }
 
-        filesFlatInput.addEventListener('change', () => updateFileInfo(filesFlatInput.files));
-        filesTreeInput.addEventListener('change', () => updateFileInfo(filesTreeInput.files));
+  filesFlatInput.addEventListener('change', () => updateFileInfo(filesFlatInput.files));
+  filesTreeInput.addEventListener('change', () => updateFileInfo(filesTreeInput.files));
 
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-            dropZone.addEventListener(evt, e => {
-                e.preventDefault();
-                e.stopPropagation();
-            });
-        });
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+      dropZone.addEventListener(evt, e => {
+          e.preventDefault();
+          e.stopPropagation();
+      });
+  });
+  ['dragenter', 'dragover'].forEach(evt => dropZone.addEventListener(evt, () => dropZone.classList.add('bg-gray-200')));
+  ['dragleave', 'drop'].forEach(evt => dropZone.addEventListener(evt, () => dropZone.classList.remove('bg-gray-200')));
+  dropZone.addEventListener('drop', e => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      filesFlatInput.files = files;
+      updateFileInfo(files);
+  });
 
-        ['dragenter', 'dragover'].forEach(evt => {
-            dropZone.addEventListener(evt, () => dropZone.classList.add('bg-gray-200'));
-        });
+  let xhr; // pour référence globale
 
-        ['dragleave', 'drop'].forEach(evt => {
-            dropZone.addEventListener(evt, () => dropZone.classList.remove('bg-gray-200'));
-        });
+  uploadForm.addEventListener('submit', e => {
+      e.preventDefault();
 
-        dropZone.addEventListener('drop', e => {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            filesFlatInput.files = files;
-            updateFileInfo(files);
-        });
+      const files = filesFlatInput.files.length ? filesFlatInput.files : filesTreeInput.files;
+      const isValid = updateFileInfo(files);
+      if (!isValid) return;
 
-        uploadForm.addEventListener('submit', e => {
-            e.preventDefault();
+      const formData = new FormData(uploadForm);
+      uploadForm.classList.add('fade-out');
+      setTimeout(() => uploadForm.classList.add('hidden'), 600);
 
-            const files = filesFlatInput.files.length ? filesFlatInput.files : filesTreeInput.files;
-            const isValid = updateFileInfo(files);
-            if (!isValid) return;
+      document.getElementById('upload-progress').classList.remove('hidden');
+      document.getElementById('progressContainer').classList.remove('hidden');
+      document.getElementById('progressText').classList.remove('hidden');
+      document.getElementById('uploadDetails').classList.remove('hidden');
+      cancelBtn.classList.remove('hidden');
 
-            const formData = new FormData(uploadForm);
-            uploadForm.classList.add('fade-out');
-            setTimeout(() => uploadForm.classList.add('hidden'), 600);
+      xhr = new XMLHttpRequest();
+      let lastTime = Date.now();
+      let lastLoaded = 0;
 
-            document.getElementById('progressContainer').classList.remove('hidden');
-            document.getElementById('progressText').classList.remove('hidden');
-            document.getElementById('uploadDetails').classList.remove('hidden');
-            document.getElementById('upload-progress').classList.remove('hidden');
-           
+      xhr.upload.addEventListener('progress', function (e) {
+          if (e.lengthComputable) {
+              const now = Date.now();
+              const deltaTime = (now - lastTime) / 1000;
+              const deltaLoaded = e.loaded - lastLoaded;
 
-            const xhr = new XMLHttpRequest();
-            let lastTime = Date.now();
-            let lastLoaded = 0;
+              const speed = deltaLoaded / deltaTime;
+              const sentMB = (e.loaded / (1024 * 1024)).toFixed(1);
+              const totalMB = (e.total / (1024 * 1024)).toFixed(1);
+              const speedHuman = formatSpeed(speed);
+              const percent = Math.round((e.loaded / e.total) * 100);
 
-            xhr.upload.addEventListener('progress', function (e) {
-                if (e.lengthComputable) {
-                    const now = Date.now();
-                    const deltaTime = (now - lastTime) / 1000;
-                    const deltaLoaded = e.loaded - lastLoaded;
+              const progressBar = document.getElementById('progressBar');
+              progressBar.style.width = percent + '%';
+              progressBar.textContent = percent + '%';
 
-                    const speed = deltaLoaded / deltaTime; // bytes/sec
-                    const speedMB = (speed / (1024 * 1024)).toFixed(2);
+              document.getElementById('progressValue').textContent = percent + '%';
+              document.getElementById('uploadPercent').textContent = percent + '%';
+              document.getElementById('uploadSpeed').textContent = speedHuman;
+              document.getElementById('uploadSent').textContent = `${sentMB} / ${totalMB} Mo`;
 
-                    const sentMB = (e.loaded / (1024 * 1024)).toFixed(1);
-                    const totalMB = (e.total / (1024 * 1024)).toFixed(1);
-                    const percent = Math.round((e.loaded / e.total) * 100);
+              // 🎨 Couleur + texte contrasté
+              progressBar.classList.remove(
+                  'bg-red-500', 'bg-orange-400', 'bg-yellow-300',
+                  'bg-lime-400', 'bg-green-500', 'text-white', 'text-black'
+              );
+              if (percent <= 20) progressBar.classList.add('bg-red-500', 'text-white');
+              else if (percent <= 40) progressBar.classList.add('bg-orange-400', 'text-white');
+              else if (percent <= 60) progressBar.classList.add('bg-yellow-300', 'text-black');
+              else if (percent <= 80) progressBar.classList.add('bg-lime-400', 'text-black');
+              else progressBar.classList.add('bg-green-500', 'text-white');
 
-                    document.getElementById('progressBar').style.width = percent + '%';
-                    document.getElementById('progressValue').textContent = percent + '%';
-                    document.getElementById('progressBar').textContent = percent + '%';
+              if (percent >= 90) cancelBtn.classList.add('hidden');
 
+              if (percent >= 100) {
+                  document.getElementById('progressContainer').classList.add('hidden');
+                  document.getElementById('progressText').classList.add('hidden');
+                  document.getElementById('uploadDetails').classList.add('hidden');
+                  document.getElementById('redirectMessage').classList.remove('hidden');
+                  cancelBtn.classList.add('hidden');
+              }
 
-                    document.getElementById('uploadPercent').textContent = percent + '%';
-                    document.getElementById('uploadSpeed').textContent = speedMB + ' Mo/s';
-                    document.getElementById('uploadSent').textContent = `${sentMB} / ${totalMB} Mo`;
+              lastTime = now;
+              lastLoaded = e.loaded;
+          }
+      });
 
-                    // Si 100%, cacher tout et afficher le message
-                    if (percent >= 100) {
-                        document.getElementById('progressContainer').classList.add('hidden');
-                        document.getElementById('progressText').classList.add('hidden');
-                        document.getElementById('uploadDetails').classList.add('hidden');
-                        document.getElementById('redirectMessage').classList.remove('hidden');
-                    }
+      xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4) {
+              try {
+                  const res = JSON.parse(xhr.responseText);
+                  if (xhr.status === 200 && res.redirect) {
+                      window.location.href = res.redirect;
+                  } else {
+                      errorMessage.textContent = "Une erreur est survenue lors de l'envoi.";
+                  }
+              } catch (err) {
+                  errorMessage.textContent = "Erreur de réponse serveur.";
+              }
+          }
+      };
 
+      xhr.open('POST', uploadForm.action, true);
+      xhr.send(formData);
+  });
 
-                    lastTime = now;
-                    lastLoaded = e.loaded;
-                }
-            });
+  // 🚨 Annulation
+  cancelBtn.addEventListener('click', () => {
+      if (xhr && xhr.readyState !== 4) {
+          xhr.abort();
 
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4) {
-                    try {
-                        const res = JSON.parse(xhr.responseText);
-                        if (xhr.status === 200 && res.redirect) {
-                            window.location.href = res.redirect;
-                        } else {
-                            errorMessage.textContent = "Une erreur est survenue lors de l'envoi.";
-                        }
-                    } catch (err) {
-                        errorMessage.textContent = "Erreur de réponse serveur.";
-                    }
-                }
-            };
+          // Afficher message animé
+          const redirect = document.getElementById('redirectMessage');
+          redirect.innerHTML = `
+              <div class="flex items-center justify-center space-x-2 text-red-600 animate-pulse">
+                  <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                  </svg>
+                  <span>⛔ Envoi annulé, redirection en cours...</span>
+              </div>
+          `;
+          redirect.classList.remove('hidden');
 
-            xhr.open('POST', uploadForm.action, true);
-            xhr.send(formData);
-        });
+          document.getElementById('uploadDetails').classList.add('hidden');
+          cancelBtn.classList.add('hidden');
 
-        const optionRadios = document.querySelectorAll('.option-toggle');
-        const recipientSection = document.getElementById('recipient-section');
-        const messageSection = document.getElementById('message-section');
+          setTimeout(() => {
+              window.location.href = '/';
+          }, 3000);
+      }
+  });
 
-        function toggleUploadOption() {
-            const selected = document.querySelector('.option-toggle:checked').value;
-            const showExtra = selected === 'email';
-            recipientSection.style.display = showExtra ? 'block' : 'none';
-            messageSection.style.display = showExtra ? 'block' : 'none';
-            document.getElementById('recipient_email').required = showExtra;
-        }
-        optionRadios.forEach(r => r.addEventListener('change', toggleUploadOption));
-        window.addEventListener('DOMContentLoaded', toggleUploadOption);
+  function formatSpeed(bytesPerSec) {
+      const kb = 1024, mb = kb * 1024, gb = mb * 1024;
+      if (bytesPerSec >= gb) return (bytesPerSec / gb).toFixed(2) + ' Go/s';
+      if (bytesPerSec >= mb) return (bytesPerSec / mb).toFixed(2) + ' Mo/s';
+      if (bytesPerSec >= kb) return (bytesPerSec / kb).toFixed(2) + ' ko/s';
+      return bytesPerSec.toFixed(0) + ' o/s';
+  }
+
+  const optionRadios = document.querySelectorAll('.option-toggle');
+  const recipientSection = document.getElementById('recipient-section');
+  const messageSection = document.getElementById('message-section');
+
+  function toggleUploadOption() {
+      const selected = document.querySelector('.option-toggle:checked').value;
+      const showExtra = selected === 'email';
+      recipientSection.style.display = showExtra ? 'block' : 'none';
+      messageSection.style.display = showExtra ? 'block' : 'none';
+      document.getElementById('recipient_email').required = showExtra;
+  }
+
+  optionRadios.forEach(r => r.addEventListener('change', toggleUploadOption));
+  window.addEventListener('DOMContentLoaded', toggleUploadOption);
 </script>
+
+
 
 
 </body>

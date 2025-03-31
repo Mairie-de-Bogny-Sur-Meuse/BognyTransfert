@@ -20,6 +20,11 @@ class UploadController
 
     public function handleUpload()
 {
+    if (connection_aborted() || connection_status() !== CONNECTION_NORMAL) {
+        exit;
+    }
+    
+
     // 🛡️ Vérification CSRF
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== ($_SESSION['csrf_token'] ?? null)) {
         $this->showError("Attaque CSRF détectée", "❌ Attaque CSRF détectée lors de l'envoi des fichiers.", 403);
