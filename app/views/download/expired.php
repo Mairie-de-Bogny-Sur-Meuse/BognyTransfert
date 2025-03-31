@@ -11,5 +11,7 @@
         <p class="text-gray-700 mb-6">Le lien de téléchargement que vous avez utilisé n'est plus valide. Il a peut-être expiré ou a déjà été utilisé.</p>
         <a href="/upload" class="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition">Retourner à l'accueil</a>
     </div>
+    <?php include_once __DIR__ . '/../partials/footer.php'; ?>
 </body>
+
 </html>

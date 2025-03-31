@@ -96,6 +96,7 @@ $maxFileSize = getenv('MAX_SIZE_PER_TRANSFER') ?: 10 * 1024 * 1024 * 1024; // 2 
                 <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition">Envoyer</button>
             </div>
         </form>
+        <?php include_once __DIR__ . '/../partials/footer.php'; ?>
     </div>
 
     <script>
@@ -195,5 +196,6 @@ $maxFileSize = getenv('MAX_SIZE_PER_TRANSFER') ?: 10 * 1024 * 1024 * 1024; // 2 
         window.addEventListener('DOMContentLoaded', toggleUploadOption);
 
     </script>
+
 </body>
 </html>

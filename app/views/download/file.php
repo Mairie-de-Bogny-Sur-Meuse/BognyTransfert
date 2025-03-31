@@ -53,9 +53,11 @@
         Télécharger l'ensemble
       </a>
     </div>
+    <?php include_once __DIR__ . '/../partials/footer.php'; ?>
   </div>
   <script>
     lucide.createIcons();
   </script>
 </body>
+
 </html>

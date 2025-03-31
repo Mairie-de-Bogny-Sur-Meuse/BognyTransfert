@@ -31,6 +31,8 @@ SecurityModel::log('Erreur personnalisée', $_SESSION['email'] ?? null, [
         <a href="/" class="inline-block bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition">
             Retour à l'accueil
         </a>
+        <?php include_once __DIR__ . '/../partials/footer.php'; ?>
     </div>
 </body>
+
 </html>

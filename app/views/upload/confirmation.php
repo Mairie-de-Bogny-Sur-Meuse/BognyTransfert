@@ -53,6 +53,7 @@ unset($_SESSION['confirmation_data']);
         <?php endif; ?>
 
         <a href="/upload" class="inline-block mt-4 bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition">Envoyer d'autres fichiers</a>
+        <?php include_once __DIR__ . '/../partials/footer.php'; ?>
     </div>
 
     <script>
@@ -65,5 +66,6 @@ unset($_SESSION['confirmation_data']);
             });
         }
     </script>
+
 </body>
 </html>

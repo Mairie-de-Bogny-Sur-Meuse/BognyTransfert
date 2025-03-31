@@ -33,6 +33,7 @@ class App
         $this->router->add('/download', 'DownloadController', 'index');
         $this->router->add('/download/file', 'DownloadController', 'file');
         $this->router->add('/download/handleDownload', 'DownloadController', 'handleDownload');
+        $this->router->add('/mentions-rgpd', 'MentionController', 'rgpd');
     }
 
     public function run(): void

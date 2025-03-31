@@ -71,6 +71,7 @@
                       d="M3 15a4 4 0 004 4h10a4 4 0 004-4M7 10V4m0 0l-2 2m2-2l2 2m10 6v6m0 0l2-2m-2 2l-2-2"/>
             </svg>
         </div>
+        <?php include_once __DIR__ . '/../partials/footer.php'; ?>
     </div>
 </body>
 </html>
