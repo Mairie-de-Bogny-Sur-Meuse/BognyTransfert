@@ -1,97 +1,102 @@
-<!-- views/mentions-rgpd.php -->
+<!-- views/rgpd.php -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Mentions légales et RGPD - BognyTransfert</title>
+    <title>Politique de confidentialité - BognyTransfert</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 text-gray-800">
     <div class="max-w-4xl mx-auto p-6 bg-white shadow-md mt-8 rounded-lg">
-        <h1 class="text-2xl font-bold mb-4">Mentions Légales, RGPD & CGU</h1>
+        <h1 class="text-3xl font-bold mb-6">Politique de confidentialité (RGPD)</h1>
 
-        <h2 class="text-xl font-semibold mt-6 mb-2">1. Responsable du traitement</h2>
+        <p class="mb-4">
+            La présente politique de confidentialité a pour but d’informer les utilisateurs du service <strong>BognyTransfert</strong> sur la manière dont leurs données personnelles sont collectées, utilisées, conservées et sécurisées, conformément au Règlement Général sur la Protection des Données (RGPD – UE 2016/679).
+        </p>
+
+        <h2 class="text-2xl font-semibold mt-8 mb-2">1. Identité du responsable du traitement</h2>
         <p class="mb-4">
             Ville de Bogny-sur-Meuse<br>
-            1 Place de l'Hôtel de Ville, 08120 Bogny-sur-Meuse<br>
-            Email : informatique@bognysurmeuse.fr
+            1 Place de l'Hôtel de Ville<br>
+            08120 Bogny-sur-Meuse<br>
+            Email : <a href="mailto:informatique@bognysurmeuse.fr" class="text-blue-600 underline">informatique@bognysurmeuse.fr</a>
         </p>
 
-        <h2 class="text-xl font-semibold mt-6 mb-2">2. Finalité des données collectées</h2>
+        <h2 class="text-2xl font-semibold mt-8 mb-2">2. Finalité du traitement</h2>
         <p class="mb-4">
-            Les données collectées ont pour but de permettre l’utilisation sécurisée du service d’envoi de fichiers :
-            <ul class="list-disc ml-6">
-                <li>Gestion des transferts</li>
-                <li>Envoi d’e-mails de notification</li>
-                <li>Traçabilité et sécurité</li>
-            </ul>
+            Le traitement de données a pour finalité la mise à disposition d’un service de transfert temporaire et sécurisé de fichiers volumineux, à destination des services municipaux et des agents autorisés.
         </p>
 
-        <h2 class="text-xl font-semibold mt-6 mb-2">3. Durée de conservation</h2>
+        <h2 class="text-2xl font-semibold mt-8 mb-2">3. Données collectées</h2>
         <p class="mb-4">
-            <ul class="list-disc ml-6">
-                <li>Fichiers temporaires : supprimés après 15 minutes</li>
-                <li>Fichiers publics : supprimés après 30 jours</li>
-                <li>Fichiers archivés : supprimés après 90 jours</li>
-            </ul>
-        </p>
-
-        <h2 class="text-xl font-semibold mt-6 mb-2">4. Vos droits</h2>
-        <p class="mb-4">
-            Vous pouvez demander l’accès, la rectification ou la suppression de vos données personnelles par email à <a href="mailto:informatique@bognysurmeuse.fr" class="text-blue-600 underline">informatique@bognysurmeuse.fr</a>.
-        </p>
-
-        <h2 class="text-xl font-semibold mt-6 mb-2">5. Sécurité</h2>
-        <p class="mb-4">
-            Le service applique les normes de sécurité les plus élevées : chiffrement AES/RSA, transmission sécurisée, stockage contrôlé, architecture Zero Trust, etc.
-        </p>
-
-        <h2 class="text-xl font-semibold mt-6 mb-2">6. Conditions Générales d’Utilisation (CGU)</h2>
-        <p class="mb-4">
-            L’utilisation du service <strong>BognyTransfert</strong> implique l’acceptation pleine et entière des présentes conditions générales d’utilisation. Tout utilisateur s’engage à les respecter.
-        </p>
-
-        <h3 class="text-lg font-semibold mt-4 mb-2">6.1. Utilisation responsable du service</h3>
-        <p class="mb-4">
-            Le service est destiné uniquement à l’échange temporaire de fichiers dans un cadre professionnel ou administratif. Il est interdit d’utiliser le service pour :
+            Le service peut collecter les données suivantes :
         </p>
         <ul class="list-disc ml-6 mb-4">
-            <li>transférer des fichiers contenant des contenus illégaux, diffamatoires, violents, pornographiques ou incitant à la haine,</li>
-            <li>partager des fichiers violant les droits d’auteur, brevets, marques ou secrets commerciaux,</li>
-            <li>diffuser des virus, chevaux de Troie, ou tout autre code malveillant,</li>
-            <li>utiliser le service à des fins de spamming ou d’attaques informatiques.</li>
+            <li>Adresse e-mail de l’expéditeur (obligatoirement en <strong>@bognysurmeuse.fr</strong>)</li>
+            <li>Adresse e-mail des destinataires</li>
+            <li>Adresse IP</li>
+            <li>Date et heure de transfert</li>
+            <li>Nom, taille, et type des fichiers envoyés</li>
         </ul>
 
-        <h3 class="text-lg font-semibold mt-4 mb-2">6.2. Responsabilités de l’utilisateur</h3>
+        <h2 class="text-2xl font-semibold mt-8 mb-2">4. Base légale</h2>
         <p class="mb-4">
-            L’utilisateur est seul responsable des fichiers qu’il transfère via la plateforme. Il lui appartient de s’assurer que les fichiers ne portent pas atteinte à des tiers et respectent la législation en vigueur.
+            Le traitement est fondé sur l’intérêt légitime de la Ville de Bogny-sur-Meuse à assurer la sécurité, la traçabilité et le bon fonctionnement de son service numérique.
         </p>
 
-        <h3 class="text-lg font-semibold mt-4 mb-2">6.3. Durée de conservation</h3>
+        <h2 class="text-2xl font-semibold mt-8 mb-2">5. Durée de conservation</h2>
         <p class="mb-4">
-            Les fichiers sont automatiquement supprimés selon les règles suivantes :
+            Les données sont conservées pendant la durée nécessaire au fonctionnement du service, puis automatiquement supprimées :
         </p>
         <ul class="list-disc ml-6 mb-4">
-            <li>Fichiers temporaires : suppression automatique après 15 minutes,</li>
-            <li>Fichiers publics : suppression automatique après 30 jours,</li>
-            <li>Fichiers archivés : suppression automatique après 90 jours.</li>
+            <li>Fichiers temporaires : 15 minutes</li>
+            <li>Fichiers transférés : 30 jours</li>
+            <li>Fichiers archivés : 90 jours</li>
+            <li>Logs de connexion et traçabilité : 12 mois maximum</li>
         </ul>
 
-        <h3 class="text-lg font-semibold mt-4 mb-2">6.4. Limitation de responsabilité</h3>
+        <h2 class="text-2xl font-semibold mt-8 mb-2">6. Destinataires des données</h2>
         <p class="mb-4">
-            Bien que la Ville de Bogny-sur-Meuse mette en œuvre des mesures de sécurité élevées, elle ne peut garantir l’absence totale de défaillance technique, de perte de données ou d’interruption de service. En conséquence :
+            Les données sont exclusivement destinées aux agents de la Ville de Bogny-sur-Meuse ayant les droits nécessaires à leur traitement. Aucune donnée n’est transmise à des tiers ou à des partenaires commerciaux.
+        </p>
+
+        <h2 class="text-2xl font-semibold mt-8 mb-2">7. Sécurité des données</h2>
+        <p class="mb-4">
+            Le service intègre les dispositifs suivants pour garantir la confidentialité et l’intégrité des données :
         </p>
         <ul class="list-disc ml-6 mb-4">
-            <li>l’utilisateur accepte d’utiliser le service à ses propres risques,</li>
-            <li>la Ville de Bogny-sur-Meuse ne pourra être tenue responsable en cas de perte, altération, ou interception de fichiers,</li>
-            <li>aucune indemnisation ne pourra être réclamée en cas de dysfonctionnement ou d’indisponibilité temporaire du service.</li>
+            <li>Chiffrement des fichiers en AES-256 ou AES+RSA</li>
+            <li>Stockage sécurisé sur serveurs français</li>
+            <li>Transmission HTTPS avec certificat TLS</li>
+            <li>Contrôle des accès et audit de sécurité</li>
+            <li>Vérification d’identité par email professionnel</li>
         </ul>
 
-        <h3 class="text-lg font-semibold mt-4 mb-2">6.5. Modifications des CGU</h3>
+        <h2 class="text-2xl font-semibold mt-8 mb-2">8. Vos droits</h2>
         <p class="mb-4">
-            La Ville de Bogny-sur-Meuse se réserve le droit de modifier les présentes conditions à tout moment. Les utilisateurs seront informés des changements via le site. L’utilisation continue du service vaut acceptation des conditions mises à jour.
+            Conformément à la réglementation en vigueur, vous disposez des droits suivants :
+        </p>
+        <ul class="list-disc ml-6 mb-4">
+            <li>Droit d’accès à vos données</li>
+            <li>Droit de rectification en cas d’erreur</li>
+            <li>Droit de suppression dans les conditions prévues par la loi</li>
+            <li>Droit d’opposition pour motifs légitimes</li>
+        </ul>
+        <p class="mb-4">
+            Pour exercer vos droits, adressez un email à : <a href="mailto:informatique@bognysurmeuse.fr" class="text-blue-600 underline">informatique@bognysurmeuse.fr</a>
         </p>
 
+        <h2 class="text-2xl font-semibold mt-8 mb-2">9. Délégué à la protection des données (DPO)</h2>
+        <p class="mb-4">
+            Le DPO de la Ville de Bogny-sur-Meuse peut être contacté pour toute question relative à la protection des données à caractère personnel : <a href="mailto:dpo@bognysurmeuse.fr" class="text-blue-600 underline">dpo@bognysurmeuse.fr</a>
+        </p>
+
+        <h2 class="text-2xl font-semibold mt-8 mb-2">10. Réclamations</h2>
+        <p class="mb-4">
+            En cas de non-respect de vos droits, vous pouvez introduire une réclamation auprès de la CNIL (Commission Nationale de l’Informatique et des Libertés) :
+            <br>
+            <a href="https://www.cnil.fr" class="text-blue-600 underline">https://www.cnil.fr</a>
+        </p>
 
         <p class="text-sm text-gray-500 mt-8">
             Dernière mise à jour : <?= date("d/m/Y") ?>
