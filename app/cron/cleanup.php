@@ -42,6 +42,7 @@ foreach ($fichiers as $fichier) {
     // Suppression en base
     $fichierModel->deleteById($fichier['id']);
     $fileKeyModel->deleteByUuidAndFile($fichier['uuid'], $fichier['file_name']);
+    $fileKeyModel->deleteOldKey();
 }
 
 // Suppression des dossiers UUID vides

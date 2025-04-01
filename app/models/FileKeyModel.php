@@ -42,7 +42,10 @@ class FileKeyModel
             ':file_name' => $fileName
         ]);
     }
-
+    public function deleteOldKey(){
+        $stmt = $this->db->prepare("DELETE from file_keys where file_keys.file_name not in (select uploads.file_name from uploads)");
+        return $stmt->execute();
+    }
 
     /**
      * Récupère les informations de clé d'un fichier donné.
