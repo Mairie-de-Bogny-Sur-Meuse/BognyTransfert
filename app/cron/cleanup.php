@@ -27,8 +27,9 @@ $deleted = 0;
 
 // === 1. Nettoyage des fichiers expirés (UPLOAD_PATH > 30 jours) ===
 if ($debug) error_log("[CRON] 🔁 Vérification des fichiers expirés...");
-
 $fichiers = $fichierModel->findAllExpired(); // doit retourner fichiers où token_expire < NOW()
+
+
 
 foreach ($fichiers as $fichier) {
     $path = $fichier['file_path'];
@@ -42,8 +43,10 @@ foreach ($fichiers as $fichier) {
     // Suppression en base
     $fichierModel->deleteById($fichier['id']);
     $fileKeyModel->deleteByUuidAndFile($fichier['uuid'], $fichier['file_name']);
-    $fileKeyModel->deleteOldKey();
+    
 }
+if ($debug) error_log("[CRON] Supprésion des anciennes clé");
+$fileKeyModel->deleteOldKey();
 
 // Suppression des dossiers UUID vides
 foreach (scandir($uploadPath) as $uuid) {
