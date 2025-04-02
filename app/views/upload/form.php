@@ -118,7 +118,7 @@ $maxFileSize = getenv('MAX_SIZE_PER_TRANSFER') ?: 2 * 1024 * 1024 * 1024; // 2 G
       <div id="error-message" class="text-red-600 text-sm mt-2 font-semibold"></div>
 
       <div class="text-center">
-        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition">Envoyer</button>
+      <button type="submit" id="submitButton"  class="bg-blue-600 text-white px-6 py-2 rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700" disabled>  Envoyer </button>
       </div>
     </form>
 

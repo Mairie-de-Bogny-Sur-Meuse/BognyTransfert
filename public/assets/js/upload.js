@@ -9,9 +9,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorMessage = document.getElementById('error-message');
     const uploadForm = document.getElementById('upload-form');
     const cancelBtn = document.getElementById('cancelUpload');
+    const submitButton = document.querySelector('#upload-form button[type="submit"]');
 
     const maxTotalSize = parseInt(uploadForm.dataset.maxTotalSize);
     const maxFileSize = parseInt(uploadForm.dataset.maxFileSize);
+    const dangerousExtensions = ['php', 'exe', 'sh', 'bat', 'cmd'];
+
+    function setSubmitEnabled(state) {
+        submitButton.disabled = !state;
+        submitButton.classList.toggle('opacity-50', !state);
+        submitButton.classList.toggle('cursor-not-allowed', !state);
+    }
 
     chooseFilesBtn.addEventListener('click', () => filesFlatInput.click());
     chooseFolderBtn.addEventListener('click', () => filesTreeInput.click());
@@ -21,35 +29,51 @@ document.addEventListener('DOMContentLoaded', () => {
         fileInfo.textContent = '';
         errorMessage.textContent = '';
         clearFilesBtn.classList.add('hidden');
+        setSubmitEnabled(false);
     });
 
     function updateFileInfo(files) {
         let totalSize = 0;
         let tooBig = false;
+        let dangerousFound = false;
+
         for (const file of files) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (dangerousExtensions.includes(ext)) {
+                dangerousFound = true;
+                break;
+            }
+
             totalSize += file.size;
             if (file.size > maxFileSize) tooBig = true;
         }
 
-        if (tooBig) {
-            errorMessage.textContent = "Un ou plusieurs fichiers dépassent la taille maximale autorisée (2 Go).";
+        if (dangerousFound) {
+            errorMessage.textContent = "❌ Un ou plusieurs fichiers ont une extension interdite (.bat, .php, etc.).";
             clearFilesBtn.classList.remove('hidden');
+            setSubmitEnabled(false);
+            return false;
+        }
+
+        if (tooBig) {
+            errorMessage.textContent = "❌ Un ou plusieurs fichiers dépassent la taille maximale autorisée (2 Go).";
+            clearFilesBtn.classList.remove('hidden');
+            setSubmitEnabled(false);
             return false;
         }
 
         if (totalSize > maxTotalSize) {
-            errorMessage.textContent = "La taille totale dépasse la limite de 10 Go.";
+            errorMessage.textContent = "❌ La taille totale dépasse la limite de 10 Go.";
             clearFilesBtn.classList.remove('hidden');
+            setSubmitEnabled(false);
             return false;
         }
 
         const sizeMB = (totalSize / (1024 * 1024)).toFixed(2);
         fileInfo.textContent = `${files.length} fichier(s), ${sizeMB} Mo`;
         errorMessage.textContent = "";
-
-        // ✅ Affiche le bouton uniquement si des fichiers sont présents
         clearFilesBtn.classList.toggle('hidden', files.length === 0);
-
+        setSubmitEnabled(true);
         return true;
     }
 
@@ -65,8 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ['dragenter', 'dragover'].forEach(evt => dropZone.addEventListener(evt, () => dropZone.classList.add('bg-gray-200')));
     ['dragleave', 'drop'].forEach(evt => dropZone.addEventListener(evt, () => dropZone.classList.remove('bg-gray-200')));
     dropZone.addEventListener('drop', e => {
-        const dt = e.dataTransfer;
-        const files = dt.files;
+        const files = e.dataTransfer.files;
         filesFlatInput.files = files;
         updateFileInfo(files);
     });
@@ -81,12 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = new FormData(uploadForm);
         formData.set('cancel_upload', '0');
-
-        uploadForm.classList.add('fade-out');
-        setTimeout(() => uploadForm.classList.add('hidden'), 600);
-        document.getElementById('upload-progress').classList.remove('hidden');
-        document.getElementById('uploadETA').classList.remove('hidden');
-        cancelBtn.classList.remove('hidden');
 
         xhr = new XMLHttpRequest();
 
@@ -118,17 +135,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (speedHistory.length > maxHistory) speedHistory.shift();
 
             const avgSpeed = speedHistory.reduce((a, b) => a + b, 0) / speedHistory.length;
-
             const remaining = e.total - e.loaded;
             const eta = remaining / avgSpeed;
-            if (isFinite(eta)) {
-                etaHistory.push(eta);
-                if (etaHistory.length > maxHistory) etaHistory.shift();
-                const avgEta = etaHistory.reduce((a, b) => a + b, 0) / etaHistory.length;
-                document.getElementById('etaValue').textContent = `${Math.floor(avgEta / 60)}m ${Math.floor(avgEta % 60)}s`;
-            } else {
-                document.getElementById('etaValue').textContent = "Calcul...";
-            }
+            const etaText = isFinite(eta)
+                ? `${Math.floor(eta / 60)}m ${Math.floor(eta % 60)}s`
+                : "Calcul...";
+            document.getElementById('etaValue').textContent = etaText;
 
             if (percent >= 100) {
                 cancelBtn.classList.add('hidden');
@@ -142,18 +154,34 @@ document.addEventListener('DOMContentLoaded', () => {
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
                 if (xhr.status === 0) return;
+
                 try {
                     const res = JSON.parse(xhr.responseText);
+
                     if (res.redirect) {
                         window.location.href = res.redirect;
                     } else {
-                        errorMessage.textContent = "Erreur serveur.";
+                        document.getElementById('upload-progress').classList.add('hidden');
+                        uploadForm.classList.remove('fade-out', 'hidden');
+                        errorMessage.textContent = res.error || "❌ Une erreur est survenue.";
+                        setSubmitEnabled(true);
                     }
                 } catch {
-                    errorMessage.textContent = "Réponse invalide du serveur.";
+                    document.getElementById('upload-progress').classList.add('hidden');
+                    uploadForm.classList.remove('fade-out', 'hidden');
+                    errorMessage.textContent = "❌ Réponse invalide du serveur.";
+                    setSubmitEnabled(true);
                 }
             }
         };
+
+        uploadForm.classList.add('fade-out');
+        setTimeout(() => uploadForm.classList.add('hidden'), 600);
+        document.getElementById('upload-progress').classList.remove('hidden');
+        document.getElementById('uploadETA').classList.remove('hidden');
+        cancelBtn.classList.remove('hidden');
+
+        setSubmitEnabled(false);
 
         xhr.open('POST', uploadForm.action, true);
         xhr.send(formData);
@@ -162,8 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cancelBtn.addEventListener('click', () => {
         if (xhr && xhr.readyState !== 4) {
             xhr.abort();
-            const cancelInput = document.getElementById('cancel_upload');
-            if (cancelInput) cancelInput.value = '1';
+            document.getElementById('cancel_upload').value = '1';
 
             document.getElementById('redirectMessage').classList.remove('hidden');
             document.getElementById('redirectMessage').innerHTML = `
@@ -173,9 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                     </svg>
                     <span>⛔ Envoi annulé, retour à l’accueil...</span>
-                </div>
-            `;
-
+                </div>`;
             setTimeout(() => {
                 window.location.href = '/';
             }, 3000);
@@ -204,4 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     optionRadios.forEach(r => r.addEventListener('change', toggleUploadOption));
     toggleUploadOption();
+
+    // Initial state
+    setSubmitEnabled(false);
 });
