@@ -1,9 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const dropZone = document.getElementById('drop-zone');
     const filesFlatInput = document.getElementById('files_flat');
-    const filesTreeInput = document.getElementById('files_tree');
     const chooseFilesBtn = document.getElementById('choose-files');
-    const chooseFolderBtn = document.getElementById('choose-folder');
     const clearFilesBtn = document.getElementById('clear-files');
     const fileInfo = document.getElementById('file-info');
     const errorMessage = document.getElementById('error-message');
@@ -15,6 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const maxFileSize = parseInt(uploadForm.dataset.maxFileSize);
     const dangerousExtensions = ['php', 'exe', 'sh', 'bat', 'cmd'];
 
+    let fileList = [];
+
     function setSubmitEnabled(state) {
         submitButton.disabled = !state;
         submitButton.classList.toggle('opacity-50', !state);
@@ -22,95 +22,119 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     chooseFilesBtn.addEventListener('click', () => filesFlatInput.click());
-    chooseFolderBtn.addEventListener('click', () => filesTreeInput.click());
+    document.getElementById('add-more-files').addEventListener('click', () => filesFlatInput.click());
     clearFilesBtn.addEventListener('click', () => {
-        filesFlatInput.value = '';
-        filesTreeInput.value = '';
-        fileInfo.textContent = '';
+        fileList = [];
+        updateInputFiles();
+        updateFileInfo();
         errorMessage.textContent = '';
         clearFilesBtn.classList.add('hidden');
         setSubmitEnabled(false);
     });
 
-    function updateFileInfo(files) {
+    filesFlatInput.addEventListener('change', (e) => {
+        const newFiles = Array.from(e.target.files);
+        fileList = mergeFileLists(fileList, newFiles);
+        updateInputFiles();
+        updateFileInfo();
+    });
+
+    function mergeFileLists(listA, listB) {
+        const names = new Set(listA.map(f => f.name));
+        return [...listA, ...listB.filter(f => !names.has(f.name))];
+    }
+
+    function updateInputFiles() {
+        const dataTransfer = new DataTransfer();
+        fileList.forEach(file => dataTransfer.items.add(file));
+        filesFlatInput.files = dataTransfer.files;
+    }
+
+    function updateFileInfo() {
         let totalSize = 0;
         let tooBig = false;
         let dangerousFound = false;
 
-        for (const file of files) {
+        for (const file of fileList) {
             const ext = file.name.split('.').pop().toLowerCase();
             if (dangerousExtensions.includes(ext)) {
                 dangerousFound = true;
                 break;
             }
-
             totalSize += file.size;
             if (file.size > maxFileSize) tooBig = true;
         }
 
         if (dangerousFound) {
-            errorMessage.textContent = "❌ Un ou plusieurs fichiers ont une extension interdite (.bat, .php, etc.).";
+            errorMessage.textContent = "❌ Un ou plusieurs fichiers ont une extension interdite.";
             clearFilesBtn.classList.remove('hidden');
             setSubmitEnabled(false);
             return false;
         }
 
         if (tooBig) {
-            errorMessage.textContent = "❌ Un ou plusieurs fichiers dépassent la taille maximale autorisée (2 Go).";
+            errorMessage.textContent = "❌ Un ou plusieurs fichiers dépassent 2 Go.";
             clearFilesBtn.classList.remove('hidden');
             setSubmitEnabled(false);
             return false;
         }
 
         if (totalSize > maxTotalSize) {
-            errorMessage.textContent = "❌ La taille totale dépasse la limite de 10 Go.";
+            errorMessage.textContent = "❌ La taille totale dépasse 10 Go.";
             clearFilesBtn.classList.remove('hidden');
             setSubmitEnabled(false);
             return false;
         }
 
         const sizeMB = (totalSize / (1024 * 1024)).toFixed(2);
-        fileInfo.textContent = `${files.length} fichier(s), ${sizeMB} Mo`;
+        fileInfo.textContent = `${fileList.length} fichier(s), ${sizeMB} Mo`;
         errorMessage.textContent = "";
-        clearFilesBtn.classList.toggle('hidden', files.length === 0);
-        setSubmitEnabled(true);
+        clearFilesBtn.classList.toggle('hidden', fileList.length === 0);
+        document.getElementById('add-more-files').classList.toggle('hidden', fileList.length === 0);
+        document.getElementById('choose-files').classList.toggle('hidden', fileList.length > 0);
+        document.getElementById('choose-folder').classList.toggle('hidden', fileList.length > 0);
+        setSubmitEnabled(fileList.length > 0);
         return true;
     }
 
-    filesFlatInput.addEventListener('change', () => updateFileInfo(filesFlatInput.files));
-    filesTreeInput.addEventListener('change', () => updateFileInfo(filesTreeInput.files));
-
+    // Drag and drop
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
         dropZone.addEventListener(evt, e => {
             e.preventDefault();
             e.stopPropagation();
         });
     });
-    ['dragenter', 'dragover'].forEach(evt => dropZone.addEventListener(evt, () => dropZone.classList.add('bg-gray-200')));
-    ['dragleave', 'drop'].forEach(evt => dropZone.addEventListener(evt, () => dropZone.classList.remove('bg-gray-200')));
+
+    ['dragenter', 'dragover'].forEach(evt =>
+        dropZone.addEventListener(evt, () => dropZone.classList.add('bg-gray-200'))
+    );
+    ['dragleave', 'drop'].forEach(evt =>
+        dropZone.addEventListener(evt, () => dropZone.classList.remove('bg-gray-200'))
+    );
+
     dropZone.addEventListener('drop', e => {
-        const files = e.dataTransfer.files;
-        filesFlatInput.files = files;
-        updateFileInfo(files);
+        const droppedFiles = Array.from(e.dataTransfer.files);
+        fileList = mergeFileLists(fileList, droppedFiles);
+        updateInputFiles();
+        updateFileInfo();
     });
 
     let xhr;
+
     uploadForm.addEventListener('submit', e => {
         e.preventDefault();
-
-        const files = filesFlatInput.files.length ? filesFlatInput.files : filesTreeInput.files;
-        const isValid = updateFileInfo(files);
+        const isValid = updateFileInfo();
         if (!isValid) return;
 
         const formData = new FormData(uploadForm);
         formData.set('cancel_upload', '0');
+        fileList.forEach(file => formData.append('files_flat[]', file));
 
         xhr = new XMLHttpRequest();
 
         let lastTime = Date.now();
         let lastLoaded = 0;
         let speedHistory = [];
-        let etaHistory = [];
         const maxHistory = 20;
 
         xhr.upload.addEventListener('progress', e => {
@@ -154,10 +178,8 @@ document.addEventListener('DOMContentLoaded', () => {
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
                 if (xhr.status === 0) return;
-
                 try {
                     const res = JSON.parse(xhr.responseText);
-
                     if (res.redirect) {
                         window.location.href = res.redirect;
                     } else {
@@ -180,9 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('upload-progress').classList.remove('hidden');
         document.getElementById('uploadETA').classList.remove('hidden');
         cancelBtn.classList.remove('hidden');
-
         setSubmitEnabled(false);
-
         xhr.open('POST', uploadForm.action, true);
         xhr.send(formData);
     });
@@ -201,9 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </svg>
                     <span>⛔ Envoi annulé, retour à l’accueil...</span>
                 </div>`;
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 3000);
+            setTimeout(() => window.location.href = '/', 3000);
         }
     });
 
@@ -215,6 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return bps.toFixed(0) + ' o/s';
     }
 
+    // Option affichage message
     const optionRadios = document.querySelectorAll('.option-toggle');
     const recipientSection = document.getElementById('recipient-section');
     const messageSection = document.getElementById('message-section');
@@ -230,6 +249,6 @@ document.addEventListener('DOMContentLoaded', () => {
     optionRadios.forEach(r => r.addEventListener('change', toggleUploadOption));
     toggleUploadOption();
 
-    // Initial state
+    // Init
     setSubmitEnabled(false);
 });

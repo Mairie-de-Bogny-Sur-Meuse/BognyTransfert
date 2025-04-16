@@ -112,6 +112,11 @@ $maxFileSize = getenv('MAX_SIZE_PER_TRANSFER') ?: 2 * 1024 * 1024 * 1024; // 2 G
         <button type="button" id="choose-files" class="text-blue-600 underline mt-2">Choisir des fichiers</button>
         <button type="button" id="choose-folder" class="text-blue-600 underline ml-4">Choisir un dossier</button>
         <button type="button" id="clear-files" class="text-red-600 underline ml-4 hidden">🗑️ Vider la sélection</button>
+        <button type="button" id="add-more-files"
+              class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition hidden">
+        ➕ Ajouter d'autres fichiers
+      </button>
+    
       </div>
 
       <div id="file-info" class="text-sm text-gray-600"></div>
