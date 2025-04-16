@@ -158,6 +158,7 @@ class UploadController
         'message' => $message,
         'upload_option' => $uploadOption,
         'download_link' => rtrim($_ENV['BASE_URL'], '/') . "/d/$uuid",
+        'encryption' => $encryptionLevel,
         'encryption_level' => $encryptionLevel
     ];
 

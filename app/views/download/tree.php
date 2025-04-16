@@ -17,28 +17,29 @@
 <body class="bg-gray-100 min-h-screen p-6 text-gray-800">
   <div class="bg-white p-8 rounded-2xl shadow-xl max-w-5xl mx-auto w-full">
     <h1 class="text-3xl font-bold text-blue-600 text-center mb-4">Téléchargement de fichiers</h1>
-    <?php if (!empty($passwordHash) && !isset($_SESSION['access_granted'][$_GET['token']])): ?>
-  <?php if (!empty($error)): ?>
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-center" role="alert">
-      <strong class="font-bold">Erreur :</strong> <?= htmlspecialchars($error) ?>
-    </div>
-  <?php endif; ?>
 
-  <form method="post" class="max-w-md mx-auto bg-gray-50 p-6 rounded-xl shadow-md border border-gray-200 mb-8">
-    <h2 class="text-lg font-semibold text-gray-700 mb-4">🔒 Ce transfert est protégé par mot de passe</h2>
-    <div class="mb-4">
-      <label for="password" class="block text-sm font-medium text-gray-600 mb-1">Mot de passe</label>
-      <input type="password" id="password" name="password" required placeholder="Veuillez entrer le mot de passe de se transfert"
-             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
-    </div>
-    <button type="submit"
-            class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200">
-      ✅ Valider
-    </button>
-  </form>
-  <?php include_once __DIR__ . '/../partials/footer.php'; ?>
-  <?php return; ?>
-<?php endif; ?>
+    <?php if (!empty($passwordHash) && !isset($_SESSION['access_granted'][$_GET['token']])): ?>
+      <?php if (!empty($error)): ?>
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-center" role="alert">
+          <strong class="font-bold">Erreur :</strong> <?= htmlspecialchars($error) ?>
+        </div>
+      <?php endif; ?>
+
+      <form method="post" class="max-w-md mx-auto bg-gray-50 p-6 rounded-xl shadow-md border border-gray-200 mb-8">
+        <h2 class="text-lg font-semibold text-gray-700 mb-4">🔒 Ce transfert est protégé par mot de passe</h2>
+        <div class="mb-4">
+          <label for="password" class="block text-sm font-medium text-gray-600 mb-1">Mot de passe</label>
+          <input type="password" id="password" name="password" required placeholder="Veuillez entrer le mot de passe de ce transfert"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+        <button type="submit"
+                class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200">
+          ✅ Valider
+        </button>
+      </form>
+      <?php include_once __DIR__ . '/../partials/footer.php'; ?>
+      <?php return; ?>
+    <?php endif; ?>
 
     <p id="countdown" class="text-center text-sm text-gray-500 mb-6"></p>
 
@@ -77,18 +78,15 @@
         echo '<ul class="space-y-1">';
         foreach ($tree as $name => $content) {
             $isFolder = is_array($content) && !isset($content['path']);
-            $margin = 'ml-' . min($depth * 4, 48); // max ml-48
+            $margin = 'ml-' . min($depth * 4, 48);
 
             echo '<li class="' . $margin . '">';
 
             if ($isFolder) {
-                // Ne pas afficher le dossier racine (UUID)
                 if ($depth === 0) {
-                    // Sauter l'affichage visuel du dossier racine (UUID)
                     renderTree($content, $depth + 1);
                     continue;
                 }
-                
 
                 $folderId = uniqid('folder_');
                 echo '<div class="flex items-center gap-2 folder-toggle cursor-pointer text-blue-600 font-semibold" onclick="toggleFolder(\'' . $folderId . '\', this)">';
@@ -114,13 +112,31 @@
         }
         echo '</ul>';
     }
+
+    function getEncryptionLabelWithColor(string $level): array {
+        return match ($level) {
+            'none' => ['Aucun chiffrement', 'bg-gray-200 text-gray-800'],
+            'aes' => ['Chiffrement AES (symétrique)', 'bg-yellow-100 text-yellow-700'],
+            'aes_rsa' => ['Chiffrement AES + RSA (asymétrique)', 'bg-orange-100 text-orange-700'],
+            default => ['Inconnu', 'bg-gray-100 text-gray-500'],
+        };
+    }
+
+    [$encryptionLabel, $badgeClass] = getEncryptionLabelWithColor($encryptionLevel ?? 'none');
     ?>
-    
 
     <div class="overflow-x-auto border border-gray-200 rounded-xl bg-white p-4">
       <?php renderTree($arborescence); ?>
     </div>
 
+    <!-- Badge chiffrement -->
+    <div class="mt-6 text-center">
+      <span class="inline-block px-4 py-1 text-sm font-medium rounded-full <?= $badgeClass ?>">
+        🔐 <?= $encryptionLabel ?>
+      </span>
+    </div>
+
+    <!-- Boutons -->
     <div class="mt-10 text-center">
       <a href="/download/handleDownload?token=<?= htmlspecialchars($_GET['token']) ?>"
          class="inline-block bg-green-600 text-white px-6 py-3 rounded-full hover:bg-green-700 transition">
@@ -128,12 +144,12 @@
       </a>
     </div>
     <div class="mt-10 text-center">
-    <a href="/upload" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-full shadow hover:bg-blue-700 transition duration-200">
+      <a href="/upload" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-full shadow hover:bg-blue-700 transition duration-200">
         📤 Transférer de nouveaux fichiers
-    </a>
-</div>
-<?php include_once __DIR__ . '/../partials/footer.php'; ?>
+      </a>
+    </div>
 
+    <?php include_once __DIR__ . '/../partials/footer.php'; ?>
   </div>
 
   <script>

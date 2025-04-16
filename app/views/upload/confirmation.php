@@ -13,10 +13,21 @@ $upload = $confirmation['pending_upload'];
 $generatedLink = $confirmation['generated_link'];
 $uploadOption = $upload['upload_option'] ?? 'link_only';
 $recipient = $upload['recipient'] ?? '';
+$encryptionLevel = $upload['encryption'] ?? 'none';
 
 unset($_SESSION['confirmation_data']);
 
+function getEncryptionLabel(string $level): string {
+    return match ($level) {
+        'none' => 'Aucun chiffrement',
+        'aes' => 'Chiffrement AES (symétrique)',
+        'aes_rsa' => 'Chiffrement AES + RSA (asymétrique)',
+        'maximum' => 'Chiffrement maximal (AES + RSA + protections renforcées)',
+        default => 'Inconnu',
+    };
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -36,20 +47,25 @@ unset($_SESSION['confirmation_data']);
             <div class="bg-gray-50 border border-gray-300 rounded-xl p-4 mb-4">
                 <label class="block font-semibold mb-2">Lien de téléchargement :</label>
                 <div class="flex flex-col gap-2">
-                <div class="flex items-center gap-2">
-                    <input id="downloadLink" type="text" readonly value="<?php echo htmlspecialchars($generatedLink); ?>"
-                        class="flex-1 px-4 py-2 border border-gray-300 rounded-xl bg-white text-sm focus:outline-none">
-                    <button onclick="copyLink()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Copier</button>
+                    <div class="flex items-center gap-2">
+                        <input id="downloadLink" type="text" readonly value="<?= htmlspecialchars($generatedLink); ?>"
+                            class="flex-1 px-4 py-2 border border-gray-300 rounded-xl bg-white text-sm focus:outline-none">
+                        <button onclick="copyLink()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Copier</button>
+                    </div>
+                    <a href="<?= htmlspecialchars($generatedLink); ?>" target="_blank" class="text-blue-600 hover:underline text-sm text-left">
+                        🌐 Ouvrir le lien dans un nouvel onglet
+                    </a>
                 </div>
-                <a href="<?php echo htmlspecialchars($generatedLink); ?>" target="_blank" class="text-blue-600 hover:underline text-sm text-left">
-                    🌐 Ouvrir le lien dans un nouvel onglet
-                </a>
-            </div>
-
+                <p class="text-sm text-gray-500 mt-3">
+                    🔐 Niveau de chiffrement : <strong><?= getEncryptionLabel($encryptionLevel) ?></strong>
+                </p>
             </div>
         <?php else: ?>
             <p class="mb-2">Vos fichiers ont bien été envoyés à <strong><?= htmlspecialchars($recipient) ?></strong>.</p>
             <p class="mb-4">Un email contenant le lien de téléchargement a été transmis au destinataire.</p>
+            <p class="text-sm text-gray-500">
+                🔐 Niveau de chiffrement : <strong><?= getEncryptionLabel($encryptionLevel) ?></strong>
+            </p>
         <?php endif; ?>
 
         <a href="/upload" class="inline-block mt-4 bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition">Envoyer d'autres fichiers</a>
@@ -66,6 +82,5 @@ unset($_SESSION['confirmation_data']);
             });
         }
     </script>
-
 </body>
 </html>

@@ -172,6 +172,7 @@ class VerifyController
     $_SESSION['confirmation_data'] = [
         'generated_link' => $_SESSION['generated_link'],
         'pending_upload' => $upload,
+        'encryption' => $encryptionLevel,
     ];
 
     unset($_SESSION['pending_upload'], $_SESSION['generated_link']);

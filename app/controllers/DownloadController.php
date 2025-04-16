@@ -30,7 +30,6 @@ class DownloadController
 
         session_start();
 
-        // Récupération du hash via le modèle (séparation MVC propre)
         $passwordHash = $fichierModel->getPasswordHashByToken($token);
 
         if (!empty($passwordHash) && !isset($_SESSION['access_granted'][$token])) {
@@ -42,19 +41,31 @@ class DownloadController
                 }
             }
 
-            // Redemande le mot de passe tant qu'il est incorrect ou non fourni
             if (!isset($_SESSION['access_granted'][$token])) {
                 $arborescence = FileHelper::buildFileTree($fichierBdd);
                 $tokenExpire = $fichierBdd[0]['token_expire'];
-                require_once __DIR__ . '/../views/download/tree.php';
+
+                // ➕ Ajout récupération du niveau de chiffrement pour la vue
+                require_once __DIR__ . '/../models/FileKeyModel.php';
+                $keyModel = new FileKeyModel();
+                $keyData = $keyModel->getKey($fichierBdd[0]['uuid'], $fichierBdd[0]['file_name']);
+                $encryptionLevel = $keyData['encryption_level'] ?? 'none';
+
+                require __DIR__ . '/../views/download/tree.php';
                 return;
             }
         }
 
         $arborescence = FileHelper::buildFileTree($fichierBdd);
         $tokenExpire = $fichierBdd[0]['token_expire'];
-        require_once __DIR__ . '/../views/download/tree.php';
 
+        // ➕ Ajout récupération du niveau de chiffrement pour la vue
+        require_once __DIR__ . '/../models/FileKeyModel.php';
+        $keyModel = new FileKeyModel();
+        $keyData = $keyModel->getKey($fichierBdd[0]['uuid'], $fichierBdd[0]['file_name']);
+        $encryptionLevel = $keyData['encryption_level'] ?? 'none';
+
+        require __DIR__ . '/../views/download/tree.php';
     }
     public function file()
     {
