@@ -132,7 +132,7 @@ class UploadController
 
                     $keyModel->storeKey([
                         'uuid' => $uuid,
-                        'file_name' => $relativePath,
+                        'file_name' => $filename,
                         'encrypted_key' => $encryptedKey,
                         'iv' => $iv,
                         'encryption_level' => $encryptionLevel

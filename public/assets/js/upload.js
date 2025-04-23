@@ -1,7 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     const dropZone = document.getElementById('drop-zone');
     const filesFlatInput = document.getElementById('files_flat');
+    const filesTreeInput = document.getElementById('files_tree');
     const chooseFilesBtn = document.getElementById('choose-files');
+    const chooseFolderBtn = document.getElementById('choose-folder');
     const clearFilesBtn = document.getElementById('clear-files');
     const fileInfo = document.getElementById('file-info');
     const errorMessage = document.getElementById('error-message');
@@ -22,7 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     chooseFilesBtn.addEventListener('click', () => filesFlatInput.click());
+    chooseFolderBtn.addEventListener('click', () => filesTreeInput.click());
     document.getElementById('add-more-files').addEventListener('click', () => filesFlatInput.click());
+
     clearFilesBtn.addEventListener('click', () => {
         fileList = [];
         updateInputFiles();
@@ -39,15 +43,23 @@ document.addEventListener('DOMContentLoaded', () => {
         updateFileInfo();
     });
 
+    filesTreeInput.addEventListener('change', (e) => {
+        const newFiles = Array.from(e.target.files);
+        fileList = mergeFileLists(fileList, newFiles);
+        updateInputFiles();
+        updateFileInfo();
+    });
+
     function mergeFileLists(listA, listB) {
-        const names = new Set(listA.map(f => f.name));
-        return [...listA, ...listB.filter(f => !names.has(f.name))];
+        const names = new Set(listA.map(f => f.webkitRelativePath || f.name));
+        return [...listA, ...listB.filter(f => !names.has(f.webkitRelativePath || f.name))];
     }
 
     function updateInputFiles() {
         const dataTransfer = new DataTransfer();
         fileList.forEach(file => dataTransfer.items.add(file));
         filesFlatInput.files = dataTransfer.files;
+        filesTreeInput.files = dataTransfer.files;
     }
 
     function updateFileInfo() {
@@ -86,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
 
-        const sizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+        const sizeMB = (totalSize / 1024 / 1024).toFixed(2);
         fileInfo.textContent = `${fileList.length} fichier(s), ${sizeMB} Mo`;
         errorMessage.textContent = "";
         clearFilesBtn.classList.toggle('hidden', fileList.length === 0);
@@ -97,7 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
-    // Drag and drop
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
         dropZone.addEventListener(evt, e => {
             e.preventDefault();
@@ -128,7 +139,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = new FormData(uploadForm);
         formData.set('cancel_upload', '0');
-        fileList.forEach(file => formData.append('files_flat[]', file));
+
+        formData.delete('files_flat[]');
+        formData.delete('files_tree[]');
+
+        fileList.forEach(file => {
+            const key = file.webkitRelativePath ? 'files_tree[]' : 'files_flat[]';
+            formData.append(key, file);
+        });
 
         xhr = new XMLHttpRequest();
 
@@ -233,7 +251,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return bps.toFixed(0) + ' o/s';
     }
 
-    // Option affichage message
     const optionRadios = document.querySelectorAll('.option-toggle');
     const recipientSection = document.getElementById('recipient-section');
     const messageSection = document.getElementById('message-section');
@@ -249,6 +266,5 @@ document.addEventListener('DOMContentLoaded', () => {
     optionRadios.forEach(r => r.addEventListener('change', toggleUploadOption));
     toggleUploadOption();
 
-    // Init
     setSubmitEnabled(false);
 });
