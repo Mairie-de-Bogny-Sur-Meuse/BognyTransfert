@@ -16,6 +16,7 @@ $token = htmlspecialchars($_GET['token']);
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center px-4">
+    <?php include_once __DIR__ . '/../partials/header.php'; ?>
     <div class="bg-white p-8 rounded-xl shadow-xl w-full max-w-md text-center">
         <h1 class="text-xl font-bold text-gray-800 mb-4">🔐 Clé de déchiffrement requise</h1>
         <p class="text-gray-600 mb-6">

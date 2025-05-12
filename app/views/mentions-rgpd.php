@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 text-gray-800">
+    <?php include_once __DIR__ . '/partials/header.php'; ?>
     <div class="max-w-4xl mx-auto p-6 bg-white shadow-md mt-8 rounded-lg">
         <h1 class="text-3xl font-bold mb-6">Politique de confidentialité (RGPD)</h1>
 

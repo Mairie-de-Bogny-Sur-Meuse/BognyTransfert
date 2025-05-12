@@ -7,6 +7,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+  <?php include_once __DIR__ . '/partials/header.php'; ?>
   <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-3xl">
     <h1 class="text-2xl font-bold text-blue-600 mb-6 text-center">Fichiers disponibles au téléchargement</h1>
 

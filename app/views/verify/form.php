@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <title>Vérification de l'adresse email</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 text-gray-800 min-h-screen flex items-center justify-center p-4">
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
+
+<?php include_once __DIR__ . '/../partials/header.php'; ?>
+
+<main class="flex-grow flex items-center justify-center p-4">
     <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
-        <h1 class="text-2xl font-bold mb-6 text-center">Vérification par code</h1>
+        <h1 class="sr-only">Formulaire de vérification du code</h1>
+        <h2 class="text-2xl font-bold mb-6 text-center">Vérification par code</h2>
 
         <form action="/verify/submit" method="post" class="space-y-6">
-           
-                <input type="hidden" id="email" name="email" required
-                       class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring focus:border-blue-300"
-                       value="<?php echo htmlspecialchars($_GET['email'] ?? ''); ?>">
-            
+            <input type="hidden" id="email" name="email"
+                   value="<?php echo htmlspecialchars($_GET['email'] ?? ''); ?>">
 
             <div>
                 <label for="code" class="block font-semibold mb-1">Code de vérification :</label>
@@ -28,7 +31,10 @@
                 </button>
             </div>
         </form>
+
         <?php include_once __DIR__ . '/../partials/footer.php'; ?>
     </div>
+</main>
+
 </body>
 </html>
