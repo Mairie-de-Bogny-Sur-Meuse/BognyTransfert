@@ -222,6 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelBtn.classList.remove('hidden');
         setSubmitEnabled(false);
         xhr.open('POST', uploadForm.action, true);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
         xhr.send(formData);
     });
 

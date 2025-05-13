@@ -81,6 +81,12 @@ unset($_SESSION['error'], $_SESSION['success']);
     </div>
 
     <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-4xl">
+        <div class="w-full max-w-4xl mb-4 text-right">
+            <a href="/upload" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full shadow transition">
+                ➕ Nouveau transfert
+            </a>
+        </div>
+
         <h2 class="text-xl font-bold mb-4 text-center">📁 Mes transferts</h2>
         <?php if (empty($groupes)): ?>
             <p class="text-gray-500 text-center">Aucun transfert enregistré pour l’instant.</p>

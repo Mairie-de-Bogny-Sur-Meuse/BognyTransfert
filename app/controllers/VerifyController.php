@@ -198,4 +198,120 @@ class VerifyController
         header('Location: /upload/confirmation');
         exit;
     }
+
+    public function confirmUploadFromSession()
+    {
+        $debug = ($_ENV['DEBUG_LOG'] ?? false) === 'true';
+        require_once __DIR__ . '/ErrorController.php';
+
+        // 🔐 Vérification de session
+        if (!isset($_SESSION['pending_upload'])) {
+            (new ErrorController())->custom("Erreur de session", "Aucun upload présent dans la session.", 400);
+            return;
+        }
+
+        require_once __DIR__ . '/../models/FichierModel.php';
+        $fichierModel = new FichierModel();
+
+        $upload = $_SESSION['pending_upload'];
+        $email = $upload['email'] ?? null;
+        $uuid = $upload['uuid'];
+        $uploadOption = $upload['upload_option'] ?? 'link_only';
+        $recipient = $upload['recipient'] ?? null;
+        $message = $upload['message'] ?? '';
+        $token = bin2hex(random_bytes(32));
+
+        $sourcePath = rtrim($_ENV['TEMP_PATH'], '/') . '/' . $uuid;
+        $targetPath = rtrim($_ENV['UPLOAD_PATH'], '/') . '/' . $uuid;
+
+        // 📦 Calcul de la taille totale de ce transfert
+        $totalSize = 0;
+        foreach ($upload['files'] as $fileRelatif) {
+            $src = $sourcePath . '/' . ltrim($fileRelatif, '/\\');
+            if (file_exists($src)) {
+                $totalSize += filesize($src);
+            }
+        }
+
+        // 📊 Chargement des quotas .env
+        $quotaPerTransfer = (int) ($_ENV['MAX_SIZE_PER_TRANSFER'] ?? 10737418240);         // 10 Go
+        $quotaPerMonth    = (int) ($_ENV['MAX_TOTAL_SIZE_PER_MONTH'] ?? 214748364800);     // 200 Go
+
+        // 📈 Vérification du quota mensuel
+        $alreadyUsedThisMonth = $fichierModel->sumStorageForMonthByEmail($email);
+        if ($alreadyUsedThisMonth + $totalSize > $quotaPerMonth) {
+            (new ErrorController())->custom("Quota mensuel dépassé", "Vous avez dépassé votre quota mensuel de transferts (200 Go).", 403);
+            return;
+        }
+
+        // 🧱 Vérification de la taille max par transfert
+        if ($totalSize > $quotaPerTransfer) {
+            (new ErrorController())->custom("Taille du transfert dépassée", "Ce transfert dépasse la limite autorisée de 10 Go.", 403);
+            return;
+        }
+
+        // 📁 Création du dossier de destination
+        if (!is_dir($targetPath)) {
+            mkdir($targetPath, 0755, true);
+            if ($debug) error_log("[CONFIRM_SESSION] 📁 Dossier cible créé : $targetPath");
+        }
+
+        // 📥 Déplacement et insertion des fichiers
+        foreach ($upload['files'] as $fileRelatif) {
+            $src = $sourcePath . '/' . ltrim($fileRelatif, '/\\');
+            $dest = $targetPath . '/' . ltrim($fileRelatif, '/\\');
+
+            $subDir = dirname($dest);
+            if (!is_dir($subDir)) mkdir($subDir, 0755, true);
+
+            if (file_exists($src)) {
+                rename($src, $dest);
+                if ($debug) error_log("[CONFIRM_SESSION] ✅ Fichier déplacé : $src -> $dest");
+
+                $size = filesize($dest);
+
+                $fichierModel->create([
+                    'uuid' => $uuid,
+                    'email' => $email,
+                    'file_name' => basename($fileRelatif),
+                    'file_path' => $dest,
+                    'file_size' => $size,
+                    'password_hash' => !empty($upload['password']) ? password_hash($upload['password'], PASSWORD_DEFAULT) : null,
+                    'token' => $token,
+                    'token_expire' => date('Y-m-d H:i:s', strtotime('+30 days')),
+                ]);
+            } else {
+                if ($debug) error_log("[CONFIRM_SESSION] ❌ Fichier introuvable : $src");
+            }
+        }
+
+        // 🧹 Nettoyage du dossier temporaire
+        if (is_dir($sourcePath)) {
+            $it = new RecursiveDirectoryIterator($sourcePath, RecursiveDirectoryIterator::SKIP_DOTS);
+            $files = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
+            foreach ($files as $file) {
+                $file->isDir() ? rmdir($file->getPathname()) : unlink($file->getPathname());
+            }
+            rmdir($sourcePath);
+            if ($debug) error_log("[CONFIRM_SESSION] 🧹 Dossier temporaire supprimé : $sourcePath");
+        }
+
+        // 🔗 Génération du lien de téléchargement
+        $downloadLink = $_ENV['BASE_URL'] . '/download?token=' . urlencode($token);
+        $_SESSION['generated_link'] = $downloadLink;
+
+        // 📄 Stockage pour la page de confirmation
+        $_SESSION['confirmation_data'] = [
+            'generated_link' => $downloadLink,
+            'pending_upload' => $upload,
+            'encryption' => $upload['encryption_level'] ?? 'none',
+        ];
+
+        // 🧼 Nettoyage session
+        unset($_SESSION['pending_upload'], $_SESSION['generated_link']);
+        header('Location: /upload/confirmation');
+        exit;
+    }
+
+
 }

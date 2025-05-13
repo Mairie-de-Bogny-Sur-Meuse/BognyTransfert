@@ -47,6 +47,24 @@ class FichierModel
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    /**
+     * Récupère les fichiers liés à un token et une adresse email (expéditeur).
+     *
+     * @param string $token Le token de téléchargement.
+     * @param string $email L'adresse e-mail de l'expéditeur.
+     * @return array Liste des fichiers associés.
+     */
+    public function findByTokenAndEmail(string $token, string $email): array
+    {
+        $sql = "SELECT * FROM uploads WHERE token = :token AND email = :email";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            'token' => $token,
+            'email' => $email,
+        ]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function findAllExpired(): array
     {
         $stmt = $this->db->prepare("SELECT * FROM uploads WHERE token_expire < NOW()");
@@ -86,8 +104,24 @@ class FichierModel
     public static function deleteByTokenAndEmail(string $token, string $email): bool
     {
         $db = Database::getInstance();
-        $stmt = $db->prepare("DELETE FROM uploads WHERE token = :token AND email = :email");
-        return $stmt->execute([':token' => $token, ':email' => $email]);
+
+        // Récupère les UUIDs et noms de fichiers concernés avant suppression
+        $stmt = $db->prepare("SELECT uuid, file_name FROM uploads WHERE token = :token AND email = :email");
+        $stmt->execute([':token' => $token, ':email' => $email]);
+        $fichiers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Supprime les clés associées dans file_keys
+        foreach ($fichiers as $fichier) {
+            $deleteKeyStmt = $db->prepare("DELETE FROM file_keys WHERE uuid = :uuid AND file_name = :file_name");
+            $deleteKeyStmt->execute([
+                ':uuid' => $fichier['uuid'],
+                ':file_name' => $fichier['file_name']
+            ]);
+        }
+
+        // Supprime les fichiers dans uploads
+        $deleteUploadStmt = $db->prepare("DELETE FROM uploads WHERE token = :token AND email = :email");
+        return $deleteUploadStmt->execute([':token' => $token, ':email' => $email]);
     }
     public static function findTransfersByEmail(string $email): array
     {
@@ -99,5 +133,12 @@ class FichierModel
         $stmt->execute([$email]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    
+    public function sumStorageForMonthByEmail(string $email): int
+    {
+        $sql = "SELECT SUM(file_size) FROM uploads WHERE email = :email AND MONTH(token_expire) = MONTH(NOW()) AND YEAR(token_expire) = YEAR(NOW())";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['email' => $email]);
+        return (int) $stmt->fetchColumn();
+    }
+
 }

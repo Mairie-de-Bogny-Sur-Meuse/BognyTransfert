@@ -53,15 +53,21 @@ class DashboardController
     /**
      * Supprime un transfert (par token) appartenant à l’utilisateur.
      */
+    /**
+ * Supprime un transfert appartenant à l'utilisateur connecté.
+ * Cela inclut la suppression des enregistrements en base et des fichiers sur le disque.
+ */
     public function deleteTransfer()
     {
         session_start();
 
+        // Vérifie la méthode HTTP
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
             exit('Méthode non autorisée');
         }
 
+        // Vérifie que l'utilisateur est bien authentifié
         if (!isset($_SESSION['user_id'], $_SESSION['user_email'])) {
             header('Location: /login');
             exit;
@@ -70,7 +76,7 @@ class DashboardController
         $token = $_POST['token'] ?? '';
         $csrf = $_POST['csrf_token'] ?? '';
 
-        // Vérifie la validité du jeton CSRF
+        // Vérifie le jeton CSRF
         if (!SecurityModel::verifyCSRFToken($csrf)) {
             $_SESSION['error'] = "Jeton CSRF invalide.";
             header('Location: /dashboard');
@@ -79,6 +85,30 @@ class DashboardController
 
         require_once __DIR__ . '/../models/FichierModel.php';
 
+        // Récupère tous les fichiers liés à ce token et à l'utilisateur
+        $fichierModel = new FichierModel();
+        $fichiers = $fichierModel->findByTokenAndEmail($token, $_SESSION['user_email']);
+
+
+        // Supprime les fichiers du disque
+        foreach ($fichiers as $fichier) {
+            $filePath = $fichier['file_path'];
+            if (file_exists($filePath)) {
+                unlink($filePath); // Supprime le fichier
+            }
+        }
+
+        // Supprime le dossier parent s'il est vide
+        if (!empty($fichiers)) {
+            $uuid = $fichiers[0]['uuid'];
+            $uploadDir = rtrim($_ENV['UPLOAD_PATH'], '/') . '/' . $uuid;
+            if (is_dir($uploadDir)) {
+                // Supprime récursivement le dossier s’il est vide
+                @rmdir($uploadDir);
+            }
+        }
+
+        // Supprime les enregistrements en base
         $success = FichierModel::deleteByTokenAndEmail($token, $_SESSION['user_email']);
 
         $_SESSION[$success ? 'success' : 'error'] = $success
@@ -88,4 +118,5 @@ class DashboardController
         header('Location: /dashboard');
         exit;
     }
+
 }

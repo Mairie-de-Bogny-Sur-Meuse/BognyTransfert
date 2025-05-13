@@ -73,16 +73,20 @@ $maxFileSize = getenv('MAX_SIZE_PER_TRANSFER') ?: 2 * 1024 * 1024 * 1024; // 2 G
 
             <div>
                 <label for="email" class="block font-semibold mb-1">Votre adresse email :</label>
-                <input type="email" id="email" name="email" required placeholder="prenom.nom@bognysurmeuse.fr" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring focus:border-blue-300">
+                    <?php if(isset($emailForm)): ?>
+                        <input type="email" id="email" value="<?= $emailForm ?>" name="email" required placeholder="prenom.nom@bognysurmeuse.fr" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring focus:border-blue-300">
+                    <?php else: ?>
+                        <input type="email" id="email" name="email" required placeholder="prenom.nom@bognysurmeuse.fr" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring focus:border-blue-300">
+                    <?php endif; ?>
             </div>
 
             <div>
                 <label class="block font-semibold mb-1">Type d’envoi :</label>
                 <label class="inline-flex items-center mr-4">
-                    <input type="radio" name="upload_option" value="email" checked class="mr-2 option-toggle"> Envoyer par email
+                    <input type="radio" name="upload_option" value="email"  class="mr-2 option-toggle"> Envoyer par email
                 </label>
                 <label class="inline-flex items-center">
-                    <input type="radio" name="upload_option" value="link_only" class="mr-2 option-toggle"> Générer un lien uniquement
+                    <input type="radio" name="upload_option" value="link_only" checked class="mr-2 option-toggle"> Générer un lien uniquement
                 </label>
             </div>
 

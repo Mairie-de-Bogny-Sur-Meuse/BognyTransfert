@@ -59,6 +59,7 @@ class App
         $this->router->add('/upload/handleUpload', 'UploadController', 'handleUpload'); // Traitement POST
         $this->router->add('/upload/confirmation', 'UploadController', 'confirmation'); // Page de confirmation
 
+
         // ------------------------
         // 📥 Téléchargement de fichiers
         // ------------------------
@@ -89,6 +90,8 @@ class App
         $this->router->add('/login', 'AuthController', 'showLoginForm');       // GET
         $this->router->add('/login/submit', 'AuthController', 'login');        // POST
         $this->router->add('/logout', 'AuthController', 'logout');
+        $this->router->add('/upload/confirm-session', 'VerifyController', 'confirmUploadFromSession'); //Téléversement (Privée)
+
 
         // ------------------------
         // 👤 Espace personnel (dashboard)

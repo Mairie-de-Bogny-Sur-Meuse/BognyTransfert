@@ -104,6 +104,14 @@ class SecurityModel
 
         return $code;
     }
+    public function checkCsrfToken(?string $token): bool
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
+        return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
+    }
 
 
 

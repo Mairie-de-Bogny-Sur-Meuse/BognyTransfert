@@ -51,7 +51,7 @@ function getEncryptionLabel(string $level): string {
                     <label for="downloadLink" class="block font-semibold mb-2">Lien de téléchargement :</label>
                     <div class="flex flex-col gap-2">
                         <div class="flex items-center gap-2">
-                            <input id="downloadLink" type="text" readonly value="<?= htmlspecialchars($generatedLink); ?>"
+                            <input id="downloadLink" type="text" readonly value="<?= htmlspecialchars($_ENV['BaseUrl'].$generatedLink); ?>"
                                    class="flex-1 px-4 py-2 border border-gray-300 rounded-xl bg-white text-sm focus:outline-none">
                             <button onclick="copyLink()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Copier</button>
                         </div>
