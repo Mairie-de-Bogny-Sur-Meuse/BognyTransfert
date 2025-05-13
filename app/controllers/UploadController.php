@@ -203,7 +203,7 @@ class UploadController
 
     $this->stopIfDisconnected();
     ob_end_clean();
-    echo json_encode(['redirect' => '/verify?email=' . urlencode($email)]);
+    echo json_encode(['redirect' => '/verify/code?email=' . urlencode($email)]);
     flush();
     exit;
 }

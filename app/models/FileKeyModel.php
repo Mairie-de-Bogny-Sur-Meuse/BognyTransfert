@@ -1,16 +1,37 @@
 <?php
 
+/**
+ * Modèle FileKeyModel
+ * 
+ * Gère la persistance des clés de chiffrement (AES ou RSA) associées aux fichiers.
+ * Stocke les clés, vecteurs IV, et niveaux de chiffrement dans la table `file_keys`.
+ */
 class FileKeyModel
 {
+    /**
+     * Instance PDO de la base de données.
+     * @var PDO
+     */
     private $db;
 
+    /**
+     * Constructeur : initialise la connexion via le singleton Database.
+     */
     public function __construct()
     {
         $this->db = Database::getInstance();
     }
 
+    // ────────────────────────────────────────────────────────────────────────────────
+    // CRÉATION / MISE À JOUR
+    // ────────────────────────────────────────────────────────────────────────────────
+
     /**
-     * Enregistre ou met à jour la clé de chiffrement pour un fichier.
+     * Enregistre ou met à jour une clé de chiffrement pour un fichier spécifique.
+     * Utilise la clause "ON DUPLICATE KEY UPDATE" pour éviter les doublons.
+     *
+     * @param array $data Données de la clé (uuid, file_name, encrypted_key, iv, encryption_level)
+     * @return bool Résultat de l’exécution.
      */
     public function storeKey(array $data): bool
     {
@@ -34,25 +55,65 @@ class FileKeyModel
             'encryption_level_2' => $data['encryption_level'],
         ]);
     }
+
+    // ────────────────────────────────────────────────────────────────────────────────
+    // SUPPRESSION
+    // ────────────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Supprime une clé de chiffrement pour un fichier spécifique.
+     *
+     * @param string $uuid Identifiant unique du transfert.
+     * @param string $fileName Nom du fichier concerné.
+     * @return bool Succès de la suppression.
+     */
     public function deleteByUuidAndFile(string $uuid, string $fileName): bool
     {
-        $stmt = $this->db->prepare("DELETE FROM file_keys WHERE uuid = :uuid AND file_name = :file_name");
+        $stmt = $this->db->prepare("
+            DELETE FROM file_keys 
+            WHERE uuid = :uuid AND file_name = :file_name
+        ");
         return $stmt->execute([
             ':uuid' => $uuid,
             ':file_name' => $fileName
         ]);
     }
-    public function deleteOldKey(){
-        $stmt = $this->db->prepare("DELETE from file_keys where file_keys.file_name not in (select uploads.file_name from uploads)");
+
+    /**
+     * Supprime toutes les clés orphelines (celles qui ne correspondent plus à un fichier actif).
+     * Compare avec la table `uploads`.
+     *
+     * @return bool Succès de l’exécution.
+     */
+    public function deleteOldKey(): bool
+    {
+        $stmt = $this->db->prepare("
+            DELETE FROM file_keys 
+            WHERE file_keys.file_name NOT IN (
+                SELECT uploads.file_name FROM uploads
+            )
+        ");
         return $stmt->execute();
     }
 
+    // ────────────────────────────────────────────────────────────────────────────────
+    // LECTURE
+    // ────────────────────────────────────────────────────────────────────────────────
+
     /**
-     * Récupère les informations de clé d'un fichier donné.
+     * Récupère les métadonnées de chiffrement pour un fichier (clé, IV, niveau).
+     *
+     * @param string $uuid Identifiant de l’upload.
+     * @param string $fileName Nom du fichier.
+     * @return array|null Tableau des données ou null si introuvable.
      */
     public function getKey(string $uuid, string $fileName): ?array
     {
-        $stmt = $this->db->prepare("SELECT * FROM file_keys WHERE uuid = :uuid AND file_name = :file_name LIMIT 1");
+        $stmt = $this->db->prepare("
+            SELECT * FROM file_keys 
+            WHERE uuid = :uuid AND file_name = :file_name 
+            LIMIT 1
+        ");
         $stmt->execute([
             'uuid' => $uuid,
             'file_name' => $fileName
@@ -60,5 +121,4 @@ class FileKeyModel
 
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
-
 }

@@ -3,12 +3,10 @@
 class FichierModel
 {
     private $db;
-
     public function __construct()
     {
         $this->db = Database::getInstance();
     }
-
     public function create(array $data): bool
     {
         $stmt = $this->db->prepare("INSERT INTO uploads (
@@ -28,7 +26,6 @@ class FichierModel
             ':token_expire'  => $data['token_expire'],
         ]);
     }
-
     public function findByToken(string $token): array
     {
         $stmt = $this->db->prepare("SELECT * FROM uploads WHERE token = :token");
@@ -36,7 +33,6 @@ class FichierModel
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC); // ✅ récupère tous les fichiers liés
     }
-
     public function findByUuid(string $token): array
     {
         $stmt = $this->db->prepare("SELECT * FROM uploads WHERE uuid = :uuid");
@@ -44,7 +40,6 @@ class FichierModel
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-
     public function findByEmail(string $email): array
     {
         $stmt = $this->db->prepare("SELECT * FROM uploads WHERE email = :email ORDER BY created_at DESC");
@@ -58,8 +53,6 @@ class FichierModel
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
-
     public function deleteExpired(): int
     {
         $stmt = $this->db->prepare("DELETE FROM uploads WHERE token_expire IS NOT NULL AND token_expire < NOW()");
@@ -71,7 +64,6 @@ class FichierModel
         $stmt = $this->db->prepare("DELETE FROM uploads WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
-
     public function countByEmailThisMonth(string $email): int
     {
         $stmt = $this->db->prepare("SELECT COUNT(*) FROM uploads WHERE email = :email AND MONTH(created_at) = MONTH(NOW()) AND YEAR(created_at) = YEAR(NOW())");
@@ -91,6 +83,21 @@ class FichierModel
         $stmt->execute([$token]);
         return $stmt->fetchColumn();
     }
-
-
+    public static function deleteByTokenAndEmail(string $token, string $email): bool
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare("DELETE FROM uploads WHERE token = :token AND email = :email");
+        return $stmt->execute([':token' => $token, ':email' => $email]);
+    }
+    public static function findTransfersByEmail(string $email): array
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare("SELECT token, file_name, file_size, token_expire, created_at
+                              FROM uploads 
+                              WHERE email = ?
+                              ORDER BY created_at DESC");
+        $stmt->execute([$email]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
 }
