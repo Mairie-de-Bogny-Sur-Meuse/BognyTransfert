@@ -135,7 +135,7 @@ class FichierModel
     }
     public function sumStorageForMonthByEmail(string $email): int
     {
-        $sql = "SELECT SUM(file_size) FROM uploads WHERE email = :email AND MONTH(token_expire) = MONTH(NOW()) AND YEAR(token_expire) = YEAR(NOW())";
+        $sql = "SELECT SUM(file_size) FROM uploads WHERE email = :email AND MONTH(created_at) = MONTH(NOW()) AND YEAR(created_at) = YEAR(NOW())";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['email' => $email]);
         return (int) $stmt->fetchColumn();

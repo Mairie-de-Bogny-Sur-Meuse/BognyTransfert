@@ -18,7 +18,8 @@ UserModel::storeResetToken($_SESSION['user_id'], $tokenPassword, $expires);
 $user = UserModel::findById($_SESSION['user_id']);
 $fichierModel = new FichierModel();
 $fichiers = $fichierModel->findByEmail($user['email']);
-
+$quotaUtiliser = formatStorage($fichierModel->sumStorageForMonthByEmail($user['email']));
+$quotaTotal = formatStorage($_ENV['MAX_TOTAL_SIZE_PER_MONTH']);
 // Regrouper les fichiers par token
 $groupes = [];
 foreach ($fichiers as $fichier) {
@@ -35,6 +36,21 @@ foreach ($fichiers as $fichier) {
 $error = $_SESSION['error'] ?? null;
 $success = $_SESSION['success'] ?? null;
 unset($_SESSION['error'], $_SESSION['success']);
+function formatStorage($data):string{
+
+     $kb = 1024; 
+     $mb = $kb * 1024;
+     $gb = $mb * 1024;
+        if ($data >= $gb){
+            return round(($data / $gb),2) . ' Go ';
+        }elseif ($data >= $mb){
+            return round(($data / $mb),2) . ' Mo ';
+        }elseif ($data >= $kb){
+            return round(($data / $kb),2) . ' ko ';
+        }else {
+            return round($data,2).' o ';
+        }   
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -58,9 +74,12 @@ unset($_SESSION['error'], $_SESSION['success']);
         <?php endif; ?>
 
         <p><strong>Email :</strong> <?= htmlspecialchars($user['email']) ?></p>
-        <p class="mb-4">
+        <p>
             <strong>Authentification 2FA :</strong>
             <?= $user['twofa_enabled'] ? '✅ Activée (' . strtoupper($user['twofa_method']) . ')' : '❌ Désactivée' ?>
+        </p>
+        <p class="mb-4">
+            <strong>Quota (Mensuel) : </strong> <?= $quotaUtiliser ?>/<?= $quotaTotal ?> (<?= round(($fichierModel->sumStorageForMonthByEmail($user['email'])/$_ENV['MAX_TOTAL_SIZE_PER_MONTH']*100),4) ?> %)
         </p>
         <div class="mb-6 text-center">
             <?php if (!$user['twofa_enabled']): ?>
