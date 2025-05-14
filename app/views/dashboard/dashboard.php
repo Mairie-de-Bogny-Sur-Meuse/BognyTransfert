@@ -11,6 +11,10 @@ if (!isset($_SESSION['user_id'])) {
 require_once __DIR__ . '/../../models/UserModel.php';
 require_once __DIR__ . '/../../models/FichierModel.php';
 
+$tokenPassword = bin2hex(random_bytes(32));
+$expires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+UserModel::storeResetToken($_SESSION['user_id'], $tokenPassword, $expires);
+
 $user = UserModel::findById($_SESSION['user_id']);
 $fichierModel = new FichierModel();
 $fichiers = $fichierModel->findByEmail($user['email']);
@@ -76,7 +80,7 @@ unset($_SESSION['error'], $_SESSION['success']);
         </div>
 
         <div class="text-center">
-            <a href="/account/change-password" class="text-sm text-blue-600 hover:underline">🔒 Modifier le mot de passe</a>
+            <a href="/reset?token=<?= $tokenPassword ?>" class="text-sm text-blue-600 hover:underline">🔒 Modifier le mot de passe</a>
         </div>
     </div>
 

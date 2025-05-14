@@ -7,6 +7,8 @@ $success = $_SESSION['success'] ?? null;
 unset($_SESSION['error'], $_SESSION['success']);
 $_SESSION['csrf_token'] ??= bin2hex(random_bytes(32));
 $token = $_GET['token'] ?? '';
+
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">

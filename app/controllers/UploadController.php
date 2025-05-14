@@ -16,7 +16,9 @@ class UploadController
 {
     public function index()
     {
-        $emailForm = $_SESSION['user_email'];
+        if (isset( $_SESSION['user_email'])) {
+            $emailForm = $_SESSION['user_email'];
+        }      
         require_once __DIR__ . '/../views/upload/form.php';
     }
 
@@ -238,7 +240,7 @@ class UploadController
         echo json_encode([
             'redirect' => isset($_SESSION['user_id'])
                 ? '/upload/confirmation'
-                : '/verify?email=' . urlencode($email)
+                : '/verify/code?email=' . urlencode($email)
         ]);
         flush();
         exit;

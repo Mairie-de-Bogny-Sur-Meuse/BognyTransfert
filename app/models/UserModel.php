@@ -149,6 +149,21 @@ class UserModel
     }
 
     /**
+     * Désactive l'authentification à deux facteurs (2FA) pour un utilisateur donné.
+     *
+     * @param int $userId Identifiant de l'utilisateur.
+     * @return bool True si la désactivation a réussi.
+     */
+    public static function disable2FA(int $userId): bool
+    {
+        $db = Database::getInstance();
+        $sql = "UPDATE users SET twofa_enabled = 0, twofa_method = NULL WHERE id = :id";
+        $stmt = $db->prepare($sql);
+        return $stmt->execute(['id' => $userId]);
+    }
+
+
+    /**
      * Valide un code 2FA email.
      *
      * @param array $user
@@ -159,4 +174,62 @@ class UserModel
     {
         return $user['twofa_email_code'] === $code && strtotime($user['twofa_email_expires']) >= time();
     }
+    /**
+     * Enregistre le token de reset
+     * 
+     * @param int $user
+     * @param string $token
+     * @param string $expires
+     * @return bool
+     */
+    public static function storeResetToken(int $user,string $token,string $expires) : bool{
+        $db = Database::getInstance();
+        $stmt = $db->prepare("
+            UPDATE users set verification_token = :token,
+            verification_expires= :expires
+            where id= :user
+        ");
+        return $stmt->execute([
+            ':token' => $token,
+            ':user' => $user,
+            'expires' => $expires
+        ]);
+    }
+
+    /**
+     * recherche à partir du token de reset
+     * 
+     * @param int $token
+     * @return array $user
+     */
+    public static function findByResetToken($token) : array{
+        $db = Database::getInstance();
+        $stmt = $db->prepare("
+            SELECT * from users where verification_token = :token 
+        ");
+        $stmt->execute([$token]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $user ?: null;
+    }
+
+    
+    /**
+     * Mets à jour le mot de passe
+     * 
+     * @param int $userId
+     * @param string $hash
+     * @return bool True|False
+     */
+    public static function resetPassword($userId, $hash) : bool{
+        $db = Database::getInstance();
+        $stmt = $db->prepare("
+            UPDATE users SET password_hash = :hash where id = :userId
+        ");
+        return $stmt->execute([
+            ':hash' => $hash,
+            ':userId' => $userId,
+        ]);
+    }
+
+    
 }

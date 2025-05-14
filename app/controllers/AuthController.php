@@ -220,13 +220,29 @@ class AuthController
             $mail->Password = $_ENV['EMAIL_PASSWORD'];
             $mail->SMTPSecure = 'ssl';
             $mail->Port = (int) $_ENV['EMAIL_PORT'];
-            $mail->setFrom($_ENV['EMAIL_FROM'], $_ENV['EMAIL_FROM_NAME']);
+            $mail->setFrom($_ENV['EMAIL_FROM'], "[".$code."]".$_ENV['EMAIL_FROM_NAME']);
             $mail->addAddress($user['email']);
             $mail->isHTML(true);
-            $mail->Subject = '🔐 Code de vérification';
-            $mail->Body = "<p>Voici votre code de connexion :</p>
-                           <h2 style='font-size:2rem;text-align:center;color:#2563eb;'>$code</h2>
-                           <p>Ce code expire dans 10 minutes.</p>";
+            $mail->Subject = '🔐 Code de vérification ['.$code.']';
+            $mail->Body = '<div style="font-family: Arial, sans-serif; background-color: #f9fafb; padding: 20px; border-radius: 12px; border: 1px solid #e5e7eb;">
+                            <p style="font-size: 16px; color: #111827; margin-bottom: 12px;">
+                                Bonjour,
+                            </p>
+                            <p style="font-size: 16px; color: #111827; margin-bottom: 8px;">
+                                Voici votre code de connexion :
+                            </p>
+
+                            <div style="text-align: center; margin: 20px 0;">
+                                <span style="display: inline-block; background-color: #2563eb; color: white; font-size: 2rem; padding: 12px 24px; border-radius: 8px; letter-spacing: 4px; font-weight: bold;">
+                                    '.htmlspecialchars($code).'
+                                </span>
+                            </div>
+
+                            <p style="font-size: 14px; color: #6b7280;">
+                                ⏳ Ce code expirera dans <strong>10 minutes</strong>. Ne le partagez pas.
+                            </p>
+                        </div>
+                        ';
 
             $mail->send();
         } catch (Exception $e) {

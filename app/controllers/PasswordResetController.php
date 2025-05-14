@@ -111,7 +111,7 @@ class PasswordResetController
         require_once __DIR__ . '/../models/UserModel.php';
         $user = UserModel::findByResetToken($token);
 
-        if (!$user || strtotime($user['reset_expires']) < time()) {
+        if (!$user || strtotime($user['verification_expires']) < time()) {
             $_SESSION['error'] = "Lien expiré ou invalide.";
             header('Location: /login');
             exit;
@@ -121,7 +121,11 @@ class PasswordResetController
         UserModel::resetPassword($user['id'], $hash);
 
         $_SESSION['success'] = "Mot de passe mis à jour. Vous pouvez vous connecter.";
-        header('Location: /login');
+        if(isset($_SESSION['user_id'])){
+            header('Location: /dashboard');
+        }else {
+            header('Location: /login');
+        }
         exit;
     }
 }

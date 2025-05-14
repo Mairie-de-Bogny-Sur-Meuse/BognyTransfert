@@ -71,6 +71,10 @@ class App
         // ✅ Vérification de compte et d’email (après inscription)
         // ------------------------
         $this->router->add('/verify', 'AuthController', 'verifyEmail'); // GET ?token=...
+        $this->router->add('/verify/code', 'VerifyController', 'index');
+        $this->router->add('/verify/submit', 'VerifyController', 'submitCode');
+
+
 
         // ------------------------
         // 🛡️ Authentification à deux facteurs (2FA)
@@ -81,6 +85,7 @@ class App
         $this->router->add('/dashboard/2fa-method', 'TwoFactorController', 'enableMethod'); // Activation méthode
         $this->router->add('/dashboard/2fa-setup', 'TwoFactorController', 'totpSetup');     // QR code pour TOTP
         $this->router->add('/dashboard/2fa-enable', 'TwoFactorController', 'enableTOTP');   // Enregistrement du code TOTP
+        $this->router->add('/dashboard/2fa-disable', 'TwoFactorController', 'disable2FA');
 
         // ------------------------
         // 🔐 Authentification de l’utilisateur
@@ -91,6 +96,8 @@ class App
         $this->router->add('/login/submit', 'AuthController', 'login');        // POST
         $this->router->add('/logout', 'AuthController', 'logout');
         $this->router->add('/upload/confirm-session', 'VerifyController', 'confirmUploadFromSession'); //Téléversement (Privée)
+        
+
 
 
         // ------------------------

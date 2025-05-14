@@ -139,6 +139,23 @@ class TwoFactorController
         exit;
     }
 
+    public function disable2FA()
+    {
+        session_start();
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: /login');
+            exit;
+        }
+
+        require_once __DIR__ . '/../models/UserModel.php';
+        UserModel::disable2FA($_SESSION['user_id']);
+
+        $_SESSION['success'] = "L’authentification 2FA a bien été désactivée.";
+        header('Location: /dashboard');
+        exit;
+    }
+
+
     /**
      * Affiche le formulaire de vérification du code 2FA.
      */
