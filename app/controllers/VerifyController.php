@@ -297,7 +297,7 @@ class VerifyController
         }
 
         // 🔗 Génération du lien de téléchargement
-        $downloadLink = $_ENV['BASE_URL'] . '/download?token=' . urlencode($token);
+        $downloadLink = $_ENV['BaseUrl'] . '/download?token=' . urlencode($token);
         $_SESSION['generated_link'] = $downloadLink;
 
         // 📄 Stockage pour la page de confirmation
@@ -305,7 +305,39 @@ class VerifyController
             'generated_link' => $downloadLink,
             'pending_upload' => $upload,
             'encryption' => $upload['encryption_level'] ?? 'none',
+            
         ];
+
+        if ($uploadOption === 'email' && $recipient) {
+            $fileCount = count($upload['files']);
+            $sizeFormatted = number_format($totalSize / (1024 * 1024), 2) . ' Mo';
+            $expireDate = date('d/m/Y à H:i', strtotime('+30 days'));
+            $hasPassword = !empty($upload['password']);
+            try {
+                ob_start();
+                require __DIR__ . '/../views/emails/upload_notification.php';
+                $notifBody = ob_get_clean();
+
+                $mail = new PHPMailer(true);
+                $mail->CharSet = 'UTF-8';
+                $mail->Encoding = 'quoted-printable';
+                $mail->isSMTP();
+                $mail->Host = $_ENV['EMAIL_HOST'];
+                $mail->SMTPAuth = true;
+                $mail->Username = $_ENV['EMAIL_USER'];
+                $mail->Password = $_ENV['EMAIL_PASSWORD'];
+                $mail->SMTPSecure = 'ssl';
+                $mail->Port = (int) $_ENV['EMAIL_PORT'];
+                $mail->setFrom($_ENV['EMAIL_FROM'], $_ENV['EMAIL_FROM_NAME']);
+                $mail->addAddress($recipient);
+                $mail->isHTML(true);
+                $mail->Subject = "📁 Fichiers reçus via BognyTransfert";
+                $mail->Body = $notifBody;
+                $mail->send();
+            } catch (Exception $e) {
+                error_log("Erreur PHPMailer (destinataire) : " . $mail->ErrorInfo);
+            }
+        }
 
         // 🧼 Nettoyage session
         unset($_SESSION['pending_upload'], $_SESSION['generated_link']);

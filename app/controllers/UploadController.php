@@ -184,7 +184,7 @@ class UploadController
         if (isset($_SESSION['user_id'])) {
             $_SESSION['confirmation_data'] = [
                 'pending_upload' => $_SESSION['pending_upload'],
-                'generated_link' => rtrim($_ENV['BaseUrl'], '/') . "/download?token=$uuid"
+                'generated_link' => $_ENV['BaseUrl']."/download?token=$uuid"
             ];
 //            unset($_SESSION['pending_upload']);
             

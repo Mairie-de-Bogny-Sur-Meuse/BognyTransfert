@@ -215,7 +215,8 @@ class DownloadController
         foreach ($fichiers as $fichier) {
             $realPath = $fichier['file_path'];
             $relativePath = FileHelper::getRelativePath($realPath);
-            array_shift($parts = explode('/', $relativePath));
+            $parts = explode('/', $relativePath);
+            array_shift($parts);
             $cleanedPath = implode('/', $parts);
 
             if (!file_exists($realPath)) continue;
