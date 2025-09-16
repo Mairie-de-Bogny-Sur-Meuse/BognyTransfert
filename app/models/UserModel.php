@@ -121,8 +121,14 @@ class UserModel
     public static function enableTwoFA(int $userId, string $method): bool
     {
         $db = Database::getInstance();
-        $stmt = $db->prepare("UPDATE users SET twofa_enabled = 1, twofa_method = ? WHERE id = ?");
-        return $stmt->execute([$method, $userId]);
+        
+        if($method == 'email'){
+            $stmt = $db->prepare("UPDATE users SET twofa_enabled = 1, twofa_method = ?, twofa_totp_secret = NULL WHERE id = ?");
+            return $stmt->execute([$method, $userId]);
+        }else {
+            $stmt = $db->prepare("UPDATE users SET twofa_enabled = 1, twofa_method = ? WHERE id = ?");
+            return $stmt->execute([$method, $userId]);
+        }
     }
 
     /**
@@ -139,7 +145,8 @@ class UserModel
             UPDATE users
             SET twofa_enabled = 1,
                 twofa_method = 'totp',
-                twofa_totp_secret = :secret
+                twofa_totp_secret = :secret,
+                twofa_email_code = NULL
             WHERE id = :id
         ");
         return $stmt->execute([
@@ -157,7 +164,7 @@ class UserModel
     public static function disable2FA(int $userId): bool
     {
         $db = Database::getInstance();
-        $sql = "UPDATE users SET twofa_enabled = 0, twofa_method = NULL WHERE id = :id";
+        $sql = "UPDATE users SET twofa_enabled = 0, twofa_method = NULL, twofa_totp_secret = NULL, twofa_email_code = NULL, twofa_email_expires = NULL WHERE id = :id";
         $stmt = $db->prepare($sql);
         return $stmt->execute(['id' => $userId]);
     }
@@ -230,6 +237,31 @@ class UserModel
             ':userId' => $userId,
         ]);
     }
+    public static function updateTwofaResendAttempts(int $userId, int $attemptCount, string $timestamp): bool
+{
+    $db = Database::getInstance();
+    $stmt = $db->prepare("
+        UPDATE users
+        SET twofa_resend_attempts = :attempts, twofa_last_resend_time = :timestamp
+        WHERE id = :id
+    ");
+    return $stmt->execute([
+        ':attempts' => $attemptCount,
+        ':timestamp' => $timestamp,
+        ':id' => $userId
+    ]);
+}
+
+public static function resetTwofaResendAttempts(int $userId): bool
+{
+    $db = Database::getInstance();
+    $stmt = $db->prepare("
+        UPDATE users
+        SET twofa_resend_attempts = 0, twofa_last_resend_time = NULL
+        WHERE id = :id
+    ");
+    return $stmt->execute([':id' => $userId]);
+}
 
     
 }

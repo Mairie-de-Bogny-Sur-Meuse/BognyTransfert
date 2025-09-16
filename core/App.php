@@ -81,6 +81,7 @@ class App
         // ------------------------
         $this->router->add('/verify/2fa-submit', 'TwoFactorController', 'show2FAForm');     // Affiche le formulaire (GET)
         $this->router->add('/verify/2fa-check', 'TwoFactorController', 'verify2FACode');    // Vérifie le code saisi (POST)
+        $this->router->add('/verify/2fa-resend', 'TwoFactorController', 'resend2FACode');    // Vérifie le code saisi (POST)
         $this->router->add('/dashboard/2fa-choice', 'TwoFactorController', 'chooseMethod'); // Choix méthode
         $this->router->add('/dashboard/2fa-method', 'TwoFactorController', 'enableMethod'); // Activation méthode
         $this->router->add('/dashboard/2fa-setup', 'TwoFactorController', 'totpSetup');     // QR code pour TOTP
@@ -105,6 +106,12 @@ class App
         // ------------------------
         $this->router->add('/dashboard', 'DashboardController', 'index');
         $this->router->add('/dashboard/delete-transfer', 'DashboardController', 'deleteTransfer');
+        // Affiche le formulaire d'édition
+        $this->router->add('/dashboard/edit', 'DashboardController', 'showEditForm');
+
+        // Traite la soumission du formulaire d'édition (POST)
+        $this->router->add('/dashboard/editTransfer', 'DashboardController', 'editTransfer');
+
 
         // ------------------------
         // 🔁 Réinitialisation de mot de passe
@@ -119,6 +126,33 @@ class App
     public function run(): void
     {
         $uri = $_SERVER['REQUEST_URI'] ?? '/';
+        
         $this->router->dispatch($uri);
     }
+
+     /**
+     * Charge une vue sécurisée avec obfuscation automatique.
+     *
+     * @param string $view Le nom de la vue à charger (ex: 'auth/login')
+     * @param array $data Données à passer à la vue
+     */
+    public static function secureView(string $view, array $data = []): void
+    {
+        extract($data);
+
+        $viewPath = __DIR__ . '/../app/views/' . $view . '.obf.php';
+
+        if (!file_exists($viewPath)) {
+            // Fallback : vue non obfusquée si pas de .obf.php
+            $viewPath = __DIR__ . '/../app/views/' . $view . '.php';
+        }
+
+        if (!file_exists($viewPath)) {
+            throw new Exception("Vue introuvable : $viewPath");
+        }
+
+        require $viewPath;
+    }
+
+
 }

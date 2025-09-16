@@ -33,7 +33,8 @@ class AuthController
     {
         session_start();
         SecurityModel::generateCSRFToken();
-        require __DIR__ . '/../views/auth/login.php';
+        $data = []; 
+        App::secureView('auth/login', $data);
     }
 
     /**
@@ -220,29 +221,44 @@ class AuthController
             $mail->Password = $_ENV['EMAIL_PASSWORD'];
             $mail->SMTPSecure = 'ssl';
             $mail->Port = (int) $_ENV['EMAIL_PORT'];
-            $mail->setFrom($_ENV['EMAIL_FROM'], "[".$code."]".$_ENV['EMAIL_FROM_NAME']);
+            $mail->setFrom($_ENV['EMAIL_FROM'], $_ENV['EMAIL_FROM_NAME']);
             $mail->addAddress($user['email']);
             $mail->isHTML(true);
             $mail->Subject = '🔐 Code de vérification ['.$code.']';
-            $mail->Body = '<div style="font-family: Arial, sans-serif; background-color: #f9fafb; padding: 20px; border-radius: 12px; border: 1px solid #e5e7eb;">
-                            <p style="font-size: 16px; color: #111827; margin-bottom: 12px;">
-                                Bonjour,
-                            </p>
-                            <p style="font-size: 16px; color: #111827; margin-bottom: 8px;">
-                                Voici votre code de connexion :
-                            </p>
+            $mail->Body = '
+<div style="font-family: Arial, sans-serif; background-color: #f9fafb; padding: 24px; border-radius: 12px; border: 1px solid #e5e7eb; max-width: 480px; margin: auto; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);">
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 24px;">
+        <img src="'.$_ENV['BaseUrl'].'/assets/img/BOGNY_logo_Gradient.svg" alt="Logo" style="height: 50px;">
+    </div>
 
-                            <div style="text-align: center; margin: 20px 0;">
-                                <span style="display: inline-block; background-color: #2563eb; color: white; font-size: 2rem; padding: 12px 24px; border-radius: 8px; letter-spacing: 4px; font-weight: bold;">
-                                    '.htmlspecialchars($code).'
-                                </span>
-                            </div>
+    <!-- Message -->
+    <p style="font-size: 18px; color: #111827; margin-bottom: 16px; text-align: center;">
+        Bonjour,
+    </p>
+    <p style="font-size: 16px; color: #374151; margin-bottom: 24px; text-align: center;">
+        Voici votre code de connexion :
+    </p>
 
-                            <p style="font-size: 14px; color: #6b7280;">
-                                ⏳ Ce code expirera dans <strong>10 minutes</strong>. Ne le partagez pas.
-                            </p>
-                        </div>
-                        ';
+    <!-- Code -->
+    <div style="text-align: center; margin: 30px 0;">
+        <span style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 2.2rem; padding: 16px 32px; border-radius: 12px; letter-spacing: 6px; font-weight: bold; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);">
+            ' . htmlspecialchars($code) . '
+        </span>
+    </div>
+
+    <!-- Expiry info -->
+    <p style="font-size: 14px; color: #6b7280; text-align: center; margin-bottom: 24px;">
+        ⏳ Ce code expirera dans <strong>10 minutes</strong>. Ne le partagez avec personne.
+    </p>
+
+    <!-- Footer -->
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
+    <p style="font-size: 12px; color: #9ca3af; text-align: center;">
+        Vous n\'êtes pas à l\'origine de cette demande ? Ignorez simplement ce message.
+    </p>
+</div>';
+
 
             $mail->send();
         } catch (Exception $e) {

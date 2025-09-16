@@ -21,3 +21,7 @@ if (session_status() === PHP_SESSION_NONE) {
         </nav>
     </div>
 </header>
+<!-- TailwindCSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!--  Heroicons en SVG -->
+<script src="https://unpkg.com/lucide@latest"></script>

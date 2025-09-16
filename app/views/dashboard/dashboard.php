@@ -8,49 +8,6 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-require_once __DIR__ . '/../../models/UserModel.php';
-require_once __DIR__ . '/../../models/FichierModel.php';
-
-$tokenPassword = bin2hex(random_bytes(32));
-$expires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
-UserModel::storeResetToken($_SESSION['user_id'], $tokenPassword, $expires);
-
-$user = UserModel::findById($_SESSION['user_id']);
-$fichierModel = new FichierModel();
-$fichiers = $fichierModel->findByEmail($user['email']);
-$quotaUtiliser = formatStorage($fichierModel->sumStorageForMonthByEmail($user['email']));
-$quotaTotal = formatStorage($_ENV['MAX_TOTAL_SIZE_PER_MONTH']);
-// Regrouper les fichiers par token
-$groupes = [];
-foreach ($fichiers as $fichier) {
-    $token = $fichier['token'];
-    if (!isset($groupes[$token])) {
-        $groupes[$token] = [
-            'files' => [],
-            'expire' => $fichier['token_expire'],
-        ];
-    }
-    $groupes[$token]['files'][] = $fichier;
-}
-
-$error = $_SESSION['error'] ?? null;
-$success = $_SESSION['success'] ?? null;
-unset($_SESSION['error'], $_SESSION['success']);
-function formatStorage($data):string{
-
-     $kb = 1024; 
-     $mb = $kb * 1024;
-     $gb = $mb * 1024;
-        if ($data >= $gb){
-            return round(($data / $gb),2) . ' Go ';
-        }elseif ($data >= $mb){
-            return round(($data / $mb),2) . ' Mo ';
-        }elseif ($data >= $kb){
-            return round(($data / $kb),2) . ' ko ';
-        }else {
-            return round($data,2).' o ';
-        }   
-}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -122,7 +79,7 @@ function formatStorage($data):string{
                         <th class="px-3 py-2">Lien</th>
                         <th class="px-3 py-2">Expire</th>
                         <th class="px-3 py-2">Statut</th>
-                        <th class="px-3 py-2 text-center">Actions</th>
+                        <th class="px-3 py-2 text-center" colspan="2">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -152,6 +109,13 @@ function formatStorage($data):string{
                                     <button type="submit" class="text-red-600 hover:underline text-sm">Supprimer</button>
                                 </form>
                             </td>
+                            <td class="px-3 py-2 text-center">
+                                <a href="/dashboard/edit?token=<?= urlencode($token) ?>&csrf_token=<?= urlencode($_SESSION['csrf_token'] ?? '') ?>"
+                                class="text-yellow-600 hover:underline text-sm">
+                                    Éditer
+                                </a>
+                            </td>
+
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

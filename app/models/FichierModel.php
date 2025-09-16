@@ -140,5 +140,103 @@ class FichierModel
         $stmt->execute(['email' => $email]);
         return (int) $stmt->fetchColumn();
     }
+    public static function updateFileName($uuid, $newName, $userEmail)
+    {
+    $db = Database::getInstance();
+    $stmt = $db->prepare("UPDATE uploads SET file_name = :newName WHERE uuid = :uuid AND email = :email");
+    return $stmt->execute([
+        'newName' => $newName,
+        'uuid' => $uuid,
+        'email' => $userEmail
+    ]);
+    }
+    public static function deleteFile($uuid, $userEmail)
+    {
+        $db = Database::getInstance();
+
+        // Récupérer chemin
+        $stmt = $db->prepare("SELECT file_path FROM uploads WHERE uuid = :uuid AND email_expediteur = :email");
+        $stmt->execute(['uuid' => $uuid, 'email' => $userEmail]);
+        $file = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($file && file_exists($file['file_path'])) {
+            unlink($file['file_path']);
+        }
+
+        // Suppression en base
+        $stmt = $db->prepare("DELETE FROM uploads WHERE uuid = :uuid AND email_expediteur = :email");
+        return $stmt->execute(['uuid' => $uuid, 'email' => $userEmail]);
+    }
+    public static function updateTransferPassword($token, $hashedPassword, $userEmail)
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare("UPDATE uploads SET password_hash = :password WHERE token = :token AND email = :email");
+        return $stmt->execute([
+            'password' => $hashedPassword,
+            'token' => $token,
+            'email' => $userEmail
+        ]);
+    }
+
+    public static function updateExpirationDate($token, $date, $userEmail)
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare("UPDATE uploads SET token_expire = :date WHERE token = :token AND email = :email");
+        return $stmt->execute([
+            'date' => $date,
+            'token' => $token,
+            'email' => $userEmail
+        ]);
+    }
+
+    public static function updateEncryptionLevelIfAllowed($token, $newLevel, $isAdmin, $userEmail)
+    {
+        $db = Database::getInstance();
+
+        // Récupère tous les UUID du transfert
+        $stmt = $db->prepare("SELECT uuid FROM uploads WHERE token = :token AND email = :email");
+        $stmt->execute(['token' => $token, 'email' => $userEmail]);
+        $uuids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        if (!$uuids) return false;
+
+        // Vérifie le niveau de chiffrement des fichiers associés dans file_keys
+        $placeholders = implode(',', array_fill(0, count($uuids), '?'));
+        $inStmt = $db->prepare("SELECT DISTINCT encryption_level FROM file_keys WHERE uuid IN ($placeholders)");
+        $inStmt->execute($uuids);
+        $levels = $inStmt->fetchAll(PDO::FETCH_COLUMN);
+
+        $order = ['none' => 0, 'aes' => 1, 'aes_rsa' => 2, 'maximum' => 3];
+        $currentMax = max(array_map(fn($lvl) => $order[$lvl] ?? -1, $levels));
+        $newValue = $order[$newLevel] ?? -1;
+
+        if ($newValue < 0 || $newValue < $currentMax) {
+            if (!$isAdmin) return false;
+        }
+
+        // Mise à jour du niveau dans file_keys
+        $updateStmt = $db->prepare("UPDATE file_keys SET encryption_level = :level WHERE uuid IN ($placeholders)");
+        return $updateStmt->execute(array_merge(['level' => $newLevel], $uuids));
+    }
+
+    public static function getByToken($token, $userEmail)
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare("
+            SELECT u.uuid, u.file_name, u.file_path ,u.token_expire, fk.encryption_level
+            FROM uploads u
+            LEFT JOIN file_keys fk ON u.uuid = fk.uuid AND u.file_name = fk.file_name
+            WHERE u.token = :token AND u.email = :email
+        ");
+        $stmt->execute([
+            'token' => $token,
+            'email' => $userEmail
+        ]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+
+
+
 
 }
